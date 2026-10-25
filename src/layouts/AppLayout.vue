@@ -1,5 +1,6 @@
 <script lang="jsx">
-import { defineComponent } from "vue";
+import { defineComponent, Transition } from "vue";
+import { applyTheme } from "@/utils/theme.js";
 import { RouterView, useRoute, useRouter } from "vue-router";
 import { createCompatRender, useEffect, useState } from "@/utils/vueCompat";
 import { useWorkspaceStore } from "@/stores/workspace";
@@ -101,6 +102,10 @@ const SECTION_ROUTE_NAMES = {
   manager_attendance: "manager-attendance",
 };
 
+function resetWorkspaceScroll() {
+  const main = document.getElementById('main-content-scrollable');
+  if (main) { main.scrollTop = 0; main.scrollLeft = 0; }
+}
 function App({ router, route }) {
   const workspace = useWorkspaceStore();
   const [, triggerRender] = useState(0);
@@ -176,15 +181,7 @@ function App({ router, route }) {
     onGetEmployee: managerApi.getEmployee,
   };
   useEffect(() => {
-    localStorage.setItem("app_theme", theme);
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-      document.body.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-      document.body.classList.remove("dark");
-    }
+    applyTheme(theme);
   }, [theme]);
   useEffect(() => {
     if (!isAuthenticated || currentRole !== "ADMIN" || !getAccessToken()) return;
@@ -860,8 +857,7 @@ function App({ router, route }) {
     class="flex-1 h-full overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 w-full"
         >
           <div class="workspace-content w-full mx-auto pb-4">
-            <RouterView v-slots={{ default: ({ Component }) => Component ? renderMainContent(Component) : null }} />
-            <footer class="workspace-footer"><span> {new Date().getFullYear()} GarmentPro</span><span>រួមគ្នាឆ្ពោះទៅរកភាពរីកចម្រើន</span></footer>
+            <RouterView v-slots={{ default: ({ Component }) => Component ? <Transition name="workspace-page" mode="out-in" onBeforeEnter={resetWorkspaceScroll}><div key={route.path} class="workspace-page">{renderMainContent(Component)}</div></Transition> : null }} />
           </div>
         </main>
       </div>

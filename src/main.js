@@ -7,5 +7,8 @@ import './styles/workspace.css';
 import './styles/auth.css';
 import './styles/employee.css';
 import './styles/polish.css';
+import './styles/consistency.css';
+import './styles/dark-theme.css';
+import './styles/motion.css';
 
 createApp(App).use(createPinia()).use(router).mount('#root');

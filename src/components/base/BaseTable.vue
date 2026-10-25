@@ -1,7 +1,8 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Inbox } from 'lucide-vue-next';
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight } from 'lucide-vue-next';
 import BaseButton from './BaseButton.vue';
+import BaseState from './BaseState.vue';
 const props = defineProps({
   columns: { type: Array, required: true }, rows: { type: Array, default: () => [] },
   rowKey: { type: String, default: 'id' }, caption: { type: String, required: true },
@@ -46,9 +47,9 @@ function sort(column) { if (sortKey.value === column.key) descending.value = !de
     <span v-if="loading" role="status" class="sr-only">កំពុងទាញយកព័ត៌មាន…</span>
     <div class="base-table-scroll" tabindex="0" role="region" :aria-label="caption">
       <table class="base-table"><caption class="sr-only">{{ caption }}</caption><thead><tr><th v-for="column in columns" :key="column.key" scope="col" :class="{ 'table-align-right': column.align === 'right' }" :aria-sort="column.sortable ? sortKey === column.key ? descending ? 'descending' : 'ascending' : 'none' : undefined"><button v-if="column.sortable" type="button" class="table-sort" @click="sort(column)">{{ column.label }}<ArrowDown v-if="sortKey === column.key && descending" :size="14"/><ArrowUp v-else-if="sortKey === column.key" :size="14"/></button><template v-else>{{ column.label }}</template></th></tr></thead>
-        <tbody v-if="loading" aria-hidden="true"><tr v-for="row in 5" :key="row"><td v-for="column in columns" :key="column.key"><span class="skeleton-bar"></span></td></tr></tbody>
-        <tbody v-else-if="error"><tr><td :colspan="columns.length"><div class="table-state" role="alert"><p>{{ error }}</p><BaseButton variant="outline" @click="emit('retry')">ព្យាយាមម្ដងទៀត</BaseButton></div></td></tr></tbody>
-        <tbody v-else-if="!rows.length"><tr><td :colspan="columns.length"><div class="table-state"><Inbox :size="30" aria-hidden="true"/><p>{{ emptyText }}</p><slot name="empty-action" /></div></td></tr></tbody>
+        <tbody v-if="loading" class="table-loading" aria-hidden="true"><tr v-for="row in 5" :key="row"><td v-for="column in columns" :key="column.key"><span class="skeleton-bar"></span></td></tr></tbody>
+        <tbody v-else-if="error"><tr><td :colspan="columns.length"><BaseState kind="error" :description="error"><BaseButton variant="outline" @click="emit('retry')">ព្យាយាមម្ដងទៀត</BaseButton></BaseState></td></tr></tbody>
+        <tbody v-else-if="!rows.length"><tr><td :colspan="columns.length"><BaseState :description="emptyText"><template v-if="$slots['empty-action']" #default><slot name="empty-action" /></template></BaseState></td></tr></tbody>
         <tbody v-else><tr v-for="row in visible" :key="row[rowKey]" :data-row-key="row[rowKey]" :class="{ 'clickable-row': rowClickable }" :tabindex="rowClickable ? 0 : undefined" :aria-label="rowClickable ? rowLabel?.(row) : undefined" @click="activate(row, $event)" @keydown="activate(row, $event)"><td v-for="column in columns" :key="column.key" :class="{ 'table-align-right': column.align === 'right' }"><slot :name="`cell-${column.key}`" :row="row" :value="row[column.key]">{{ row[column.key] ?? '—' }}</slot></td></tr></tbody>
       </table>
     </div>

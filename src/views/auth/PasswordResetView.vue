@@ -2,6 +2,7 @@
 import { computed, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, ArrowRight, Mail, LockKeyhole, ShieldCheck, Eye, EyeOff, Sun, Moon } from 'lucide-vue-next';
+import { applyTheme } from '../../utils/theme.js';
 import BrandLogo from '../../components/common/BrandLogo.vue';
 import OtpInput from '../../components/common/OtpInput.vue';
 import { notify } from '../../stores/toasts.js';
@@ -32,7 +33,7 @@ const tick = ref(0);
 const remaining = computed(() => { tick.value; return reset.remaining(); });
 const timer = setInterval(() => { tick.value++; }, 1000);
 const theme = ref(localStorage.getItem('app_theme') || 'light');
-watch(theme, value => { localStorage.setItem('app_theme', value); document.documentElement.classList.toggle('dark', value === 'dark'); }, { immediate: true });
+watch(theme, value => applyTheme(value), { immediate: true });
 watch(stage, () => { errors.value = {}; otp.value = ''; newPassword.value = ''; confirmPassword.value = ''; visible.value = false; });
 onUnmounted(() => { clearInterval(timer); otp.value = ''; newPassword.value = ''; confirmPassword.value = ''; });
 const title = computed(() => ({ request: 'ភ្លេចពាក្យសម្ងាត់?', verify: 'ផ្ទៀងផ្ទាត់លេខកូដ', reset: 'កំណត់ពាក្យសម្ងាត់ថ្មី' })[stage.value]);
@@ -70,7 +71,7 @@ async function backToLogin() { reset.clear(); await router.replace('/login'); }
     <main class="auth-card">
       <aside class="auth-story">
         <BrandLogo/>
-        <div class="story-copy"><span class="eyebrow">Modern Factory</span><h1>ស្ដារការចូលប្រើ<br/><span>កន្លែងការងាររបស់អ្នក</span></h1><p>ស្នើសុំលេខកូដ ផ្ទៀងផ្ទាត់អ៊ីមែល និងកំណត់ពាក្យសម្ងាត់ថ្មី។</p><div class="story-features"><span><ShieldCheck :size="18"/>ស្ដារគណនីដោយសុវត្ថិភាព</span></div></div>
+        <div class="story-copy"><span class="eyebrow">Garmora</span><h1>ស្ដារការចូលប្រើ<br/><span>កន្លែងការងាររបស់អ្នក</span></h1><p>ស្នើសុំលេខកូដ ផ្ទៀងផ្ទាត់អ៊ីមែល និងកំណត់ពាក្យសម្ងាត់ថ្មី។</p><div class="story-features"><span><ShieldCheck :size="18"/>ស្ដារគណនីដោយសុវត្ថិភាព</span></div></div>
         <div class="story-footer"><span>ធ្វើការរួមគ្នា<br/><strong>រីកចម្រើនរួមគ្នា</strong></span></div>
       </aside>
       <section class="auth-form-panel">

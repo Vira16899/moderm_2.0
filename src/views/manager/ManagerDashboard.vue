@@ -43,7 +43,7 @@ function toggleMonth(key) { selectedMonth.value = selectedMonth.value === key ? 
 
 <template>
   <div class="dashboard role-dashboard manager-overview">
-    <header class="mi-heading"><div><h1>ផ្ទាំងគ្រប់គ្រងផ្នែក</h1><p>សូមស្វាគមន៍ {{ currentUser?.nameKh }} · ព័ត៌មានសំខាន់ៗសម្រាប់រៀបចំក្រុមការងាររបស់អ្នក</p></div><button class="mi-button mi-primary" @click="onNavigateEmployees?.()"><Users :size="17" />បុគ្គលិកក្នុងផ្នែក<ArrowUpRight :size="16" /></button></header>
+    <header class="workspace-page-header mi-heading"><div><h1>ផ្ទាំងគ្រប់គ្រងផ្នែក</h1><p>សូមស្វាគមន៍ {{ currentUser?.nameKh }} · ព័ត៌មានសំខាន់ៗសម្រាប់រៀបចំក្រុមការងាររបស់អ្នក</p></div><button class="mi-button mi-primary" @click="onNavigateEmployees?.()"><Users :size="17" />បុគ្គលិកក្នុងផ្នែក<ArrowUpRight :size="16" /></button></header>
     <div v-if="error" role="alert" class="form-error">{{ error }} <button class="mi-button" @click="onRetry?.()">ព្យាយាមម្ដងទៀត</button></div>
     <div class="metrics-grid"><DashboardMetric v-for="metric in metrics" :key="metric.title" :loading="loading" :title="metric.title" :value="unavailable ? '—' : metric.value ?? '—'" :icon="metric.icon" :color="metric.color" :note="unavailable || metric.value == null ? 'មិនមានទិន្នន័យ' : metric.note" /></div>
     <div v-if="loading" class="mi-loading" aria-busy="true">
@@ -88,7 +88,7 @@ select { min-height:42px; border:1px solid var(--line); border-radius:10px; padd
 .mi-chart button { display:flex; flex-direction:column; justify-content:flex-end; align-items:center; min-width:0; padding:0 4px; cursor:pointer; border-radius:9px; }
 .mi-chart button:hover,.mi-chart button.selected { background:color-mix(in srgb,var(--soft) 60%,transparent); }
 .mi-bar-track { display:flex; align-items:flex-end; width:100%; max-width:48px; height:168px; }
-.mi-bar { display:block; position:relative; width:100%; background:linear-gradient(to top,#008c9b,#53c5ca); border-radius:7px 7px 2px 2px; transition:height .25s; }
+.mi-bar { display:block; position:relative; width:100%; background:linear-gradient(to top,#008c9b,#53c5ca); border-radius:7px 7px 2px 2px; transition:height .35s; }
 .mi-chart button.selected .mi-bar { background:var(--blue); }
 .mi-bar>span { position:absolute; bottom:100%; left:0; width:100%; text-align:center; color:var(--ink); font-size:11px; padding-bottom:5px; }
 .mi-month-label { display:block; min-height:38px; padding-top:12px; font-size:10px; color:var(--muted); white-space:nowrap; }

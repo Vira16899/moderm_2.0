@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Hanuman:wght@100..900&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Kantumruy+Pro:wght@500&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&display=swap');
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 @theme {
-  --font-sans: "Poppins", "Hanuman", sans-serif;
-  --font-mono: "Poppins", "Hanuman", sans-serif;
+  --font-sans: "Poppins", "Kantumruy Pro", sans-serif;
+  --font-mono: "Poppins", "Kantumruy Pro", sans-serif;
   --text-xs: 0.8125rem;
   --text-xs--line-height: 1.8;
   --text-sm: 0.9375rem;
@@ -22,7 +22,8 @@
   button:disabled { cursor: not-allowed; opacity: .5; }
   :focus-visible { outline: 3px solid #85b5ff; outline-offset: 3px; }
 }
-:root { --bs-body-font-family: "Poppins", "Hanuman", sans-serif; --surface: #fff; --canvas: #f5f6f8; --ink: #1e293b; --muted: #64748b; --line: #e2e8f0; --blue: #2563eb; --soft: #eff6ff; }
+/* Khmer uses the loaded Medium face without synthesized bold weights. */
+:root { font-synthesis: none; --bs-body-font-family: "Poppins", "Kantumruy Pro", sans-serif; --surface: #fff; --canvas: #f5f6f8; --ink: #1e293b; --muted: #64748b; --line: #e2e8f0; --blue: #2563eb; --soft: #eff6ff; }
 .dark { --surface: #142030; --canvas: #0c1522; --ink: #edf3fc; --muted: #91a2b9; --line: #253448; --blue: #438eff; --soft: #1b304e; }
 .brand-logo { display: flex; align-items: center; gap: 11px; white-space: nowrap; }
 .brand-mark { width: 42px; height: 42px; display: grid; place-items: center; color: white; background: linear-gradient(140deg,#3696ff,#0663f7); border-radius: 12px; box-shadow: 0 4px 12px #096af126; }

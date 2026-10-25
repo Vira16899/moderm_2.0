@@ -475,32 +475,6 @@ fieldset.profile-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
   color: #edfaff;
 }
 
-/* Gentle motion on pointer devices; disabled controls stay still. */
-@media (prefers-reduced-motion: no-preference) {
-  .modal-overlay>.modal-surface, .base-modal[open] { animation: modal-enter .32s cubic-bezier(.22, 1, .36, 1); }
-  .modal-overlay, .base-modal[open]::backdrop { animation: modal-backdrop-enter .3s ease-out; }
-  :is(.app-shell, .modal-surface) button,
-  .app-shell .sidebar-nav button {
-    transition: translate .3s cubic-bezier(.22, 1, .36, 1), background-color .25s ease, border-color .25s ease, color .25s ease, box-shadow .3s ease;
-  }
-  .app-shell .department-card { transition: translate .35s cubic-bezier(.22, 1, .36, 1), border-color .3s ease, box-shadow .35s ease; }
-  .user-list-panel tbody>tr { transition: background-color .25s ease; }
-  .modal-surface :is(input, select, textarea) { transition: border-color .25s ease, box-shadow .25s ease, background-color .25s ease; }
-  @media (hover: hover) and (pointer: fine) {
-    :is(.app-shell, .modal-surface) button:hover:not(:disabled) { translate: 0 -1px; }
-    :is(.app-shell, .modal-surface) button:active:not(:disabled) { translate: 0 0; }
-    .app-shell .department-card:hover { translate: 0 -2px; box-shadow: 0 10px 24px #14374720; }
-    .app-shell.dark .department-card:hover { box-shadow: 0 10px 24px #00000038; }
-  }
-}
-@keyframes modal-enter {
-  from { opacity: 0; transform: translateY(6px) scale(.99); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes modal-backdrop-enter {
-  from { background-color: transparent; }
-}
-
 /* Keep sidebar content mounted so collapsing can animate without popping. */
 .app-shell .app-sidebar { min-width: 0; }
 .app-shell .sidebar-brand .brand-mark,
@@ -536,14 +510,14 @@ fieldset.profile-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
   .app-shell.sidebar-collapsed .sidebar-backdrop { opacity: 0; visibility: hidden; pointer-events: none; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .app-shell { transition: grid-template-columns .35s cubic-bezier(.22, 1, .36, 1); }
+  .app-shell { transition: grid-template-columns .24s cubic-bezier(.22, 1, .36, 1); }
   .app-shell .sidebar-nav button span,
   .app-shell .sidebar-brand .brand-logo>div,
-  .app-shell .sidebar-user>button:first-child>span:not(.user-avatar) { transition: max-width .3s ease, opacity .2s ease, visibility .3s; }
+  .app-shell .sidebar-user>button:first-child>span:not(.user-avatar) { transition: max-width .24s ease, opacity .14s ease, visibility .24s; }
   .app-shell .sidebar-brand, .app-shell .sidebar-nav,
-  .app-shell .sidebar-brand .brand-logo { transition: padding .35s ease, gap .35s ease; }
+  .app-shell .sidebar-brand .brand-logo { transition: padding .24s ease, gap .24s ease; }
   @media (max-width: 640px) {
-    .app-shell .app-sidebar { transition: transform .35s cubic-bezier(.22, 1, .36, 1), visibility .35s; }
-    .app-shell .sidebar-backdrop { transition: opacity .3s ease, visibility .3s; }
+    .app-shell .app-sidebar { transition: transform .24s cubic-bezier(.22, 1, .36, 1), visibility .24s; }
+    .app-shell .sidebar-backdrop { transition: opacity .18s ease, visibility .18s; }
   }
 }

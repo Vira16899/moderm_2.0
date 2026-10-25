@@ -363,8 +363,8 @@ router.beforeEach(createAuthGuard(auth));
 // ==========================================
 router.beforeEach((to) => {
   const pageTitle = to.meta.title
-    ? `${to.meta.title} - GarmentPro`
-    : "GarmentPro";
+    ? `${to.meta.title} - Garmora`
+    : "Garmora";
 
   document.title = pageTitle;
 

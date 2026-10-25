@@ -62,3 +62,18 @@ test('manager dashboard uses actual counts and distinguishes unknown metrics fro
   assert.equal(dashboard.pending, 1);
   assert.deepEqual(dashboard.pendingLeaves.map((request) => request.id), [1]);
 });
+
+
+test('manager employee detail maps the supplied limited profile and user_status', () => {
+  const payload = { message:'Fetched employee details successfully.', data:{id:6, email:'employee@example.com', khmer_name:'តតត', Eng_name:'Vira Chea', phone:'0974564291', avatar:'uploads/avatars/avatar-6.webp', is_active:1, gender:'MALE', hire_date:'2026-10-20T22:00:00.000Z', user_status:'ACTIVE', position_name:'បុគ្គលិកត្រួតពិនិត្យគុណភាព', department_name:'ផ្នែកត្រួតពិនិត្យ'} };
+  const user = managerEmployeeDetail(payload);
+  assert.equal(user.nameKh, payload.data.khmer_name);
+  assert.equal(user.nameEn, 'Vira Chea');
+  assert.equal(user.joinedDate, payload.data.hire_date);
+  assert.equal(user.departmentKh, payload.data.department_name);
+  assert.equal(user.positionKh, payload.data.position_name);
+  assert.equal(user.avatar, payload.data.avatar);
+  assert.equal(user.status, 'active');
+  assert.equal(user.salary, null);
+  assert.equal(managerEmployeeDetail({data:{id:6,user_status:'INACTIVE'}}).status, 'inactive');
+});

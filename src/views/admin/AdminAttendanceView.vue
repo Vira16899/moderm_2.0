@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { CalendarDays, ScanLine, Search, Users, LogIn, LogOut, ArrowUpRight } from 'lucide-vue-next';
 import { RouterLink } from 'vue-router';
 import BaseButton from '../../components/base/BaseButton.vue';
+import BaseSkeleton from '../../components/base/BaseSkeleton.vue';
 import BaseTable from '../../components/base/BaseTable.vue';
 import UserAvatar from '../../components/common/UserAvatar.vue';
 import { attendanceRecords, attendanceStatus } from '../../api/adminAttendance.js';
@@ -56,10 +57,10 @@ onMounted(refreshRecords);
 </script>
 <template>
  <section class="attendance-page">
-  <header class="attendance-heading"><div><h1>វត្តមាន និង QR</h1><p>គ្រប់គ្រង QR ប្រចាំថ្ងៃ និងតាមដានកំណត់ត្រាវត្តមានរបស់បុគ្គលិក។</p></div><span class="attendance-today"><CalendarDays :size="17"/>{{ localToday() }}</span></header>
+  <header class="workspace-page-header attendance-heading"><div><h1>វត្តមាន និង QR</h1><p>គ្រប់គ្រង QR ប្រចាំថ្ងៃ និងតាមដានកំណត់ត្រាវត្តមានរបស់បុគ្គលិក។</p></div><span class="attendance-today"><CalendarDays :size="17"/>{{ localToday() }}</span></header>
   <section class="active-qr-panel" aria-labelledby="active-qr-title"><span class="active-qr-icon"><ScanLine :size="24" /></span><div><h2 id="active-qr-title">QR សកម្ម</h2><p>បង្ហាញ QR សម្រាប់ឱ្យបុគ្គលិកស្កេនតាមវេនរបស់ពួកគេ។</p></div><RouterLink class="active-qr-link" to="/attendanceQrDisplay" target="_blank" rel="noopener noreferrer"><ScanLine :size="18" />បង្ហាញ QR សកម្ម<ArrowUpRight :size="16" /></RouterLink></section>
   <section class="attendance-records" aria-labelledby="attendance-records-title"><div class="records-heading"><div><h2 id="attendance-records-title">កំណត់ត្រាវត្តមាន</h2><p>ស្វែងរក និងពិនិត្យម៉ោងចូលចេញរបស់បុគ្គលិក</p></div></div>
-   <div class="attendance-summary"><div v-for="item in summary" :key="item.label" class="attendance-stat"><span class="stat-icon"><component :is="item.icon" :size="20"/></span><div><span>{{ item.label }}</span><strong v-if="!recordsLoading && !recordsError">{{ item.value }}</strong><span v-else class="stat-placeholder">—</span></div></div></div>
+   <div class="attendance-summary" :aria-busy="recordsLoading"><div v-for="item in summary" :key="item.label" class="attendance-stat"><span class="stat-icon"><component :is="item.icon" :size="20"/></span><div><span>{{ item.label }}</span><strong><BaseSkeleton v-if="recordsLoading" inline :lines="1" /><template v-else>{{ recordsError ? '—' : item.value }}</template></strong></div></div></div>
    <section class="records-panel"><div class="records-toolbar"><label class="records-search"><Search :size="18" aria-hidden="true"/><input v-model="search" type="search" placeholder="ស្វែងរកឈ្មោះ ឬនាយកដ្ឋាន…" aria-label="ស្វែងរកកំណត់ត្រាវត្តមាន"/></label><label class="records-date"><span>កាលបរិច្ឆេទ</span><input v-model="recordDate" type="date" aria-label="តម្រងកាលបរិច្ឆេទវត្តមាន"/></label><select v-model="status" aria-label="តម្រងស្ថានភាពវត្តមាន"><option value="all">គ្រប់ស្ថានភាព</option><option v-for="value in statusOptions" :key="value" :value="value">{{ attendanceStatus(value) }}</option></select><BaseButton v-if="hasFilters" variant="ghost" size="sm" @click="resetFilters">សម្អាតតម្រង</BaseButton></div>
     <BaseTable :columns="columns" :rows="filtered" :loading="recordsLoading" :error="recordsError" caption="កំណត់ត្រាវត្តមាន" :empty-text="hasFilters ? 'មិនមានកំណត់ត្រាត្រូវនឹងការស្វែងរករបស់អ្នកទេ។' : 'មិនទាន់មានកំណត់ត្រាវត្តមានទេ។'" @retry="refreshRecords"><template #cell-name="{row}"><div class="record-employee"><UserAvatar :src="row.avatar" :name="row.nameEn || row.name" :size="36"/><div><strong>{{ row.name || row.nameEn || 'បុគ្គលិក ' + row.employeeId }}</strong><small>{{ row.nameEn || 'លេខបុគ្គលិក: ' + (row.employeeId || '—') }}</small></div></div></template><template #cell-department="{value}">{{ value || '—' }}</template><template #cell-date="{value}"><span class="record-time">{{ formatDate(value) }}</span></template><template #cell-checkIn="{value}"><span class="record-time" :class="{'checked-in':value}">{{ formatTime(value) }}</span></template><template #cell-checkOut="{value}"><span class="record-time">{{ formatTime(value) }}</span></template><template #cell-status="{value}"><span class="attendance-status" :class="value">{{ attendanceStatus(value) }}</span></template><template #empty-action><BaseButton v-if="hasFilters" variant="outline" @click="resetFilters">សម្អាតតម្រង</BaseButton></template></BaseTable>
    </section>
@@ -105,10 +106,10 @@ onMounted(refreshRecords);
 .attendance-status.late,.attendance-status.early { background:#fff5df; color:#936113; }
 .attendance-status.absent { background:#fff0f2; color:#a53b50; }
 .attendance-page input:focus-visible,.attendance-page select:focus-visible,.records-search:focus-within { outline:2px solid var(--blue); outline-offset:2px; }
-:global(.dark) .checked-in { color:#83dfb4; }
-:global(.dark) .ready-badge,:global(.dark) .attendance-status.present,:global(.dark) .attendance-status.on_time,:global(.dark) .attendance-status.checked_in,:global(.dark) .attendance-status.checked_out { background:#183b30; color:#83dfb4; }
-:global(.dark) .attendance-status.late,:global(.dark) .attendance-status.early { background:#3a3020; color:#f5ce80; }
-:global(.dark) .attendance-status.absent { background:#422630; color:#f5a5b5; }
+.dark .checked-in { color:#83dfb4; }
+.dark .ready-badge,.dark .attendance-status.present,.dark .attendance-status.on_time,.dark .attendance-status.checked_in,.dark .attendance-status.checked_out { background:#183b30; color:#83dfb4; }
+.dark .attendance-status.late,.dark .attendance-status.early { background:#3a3020; color:#f5ce80; }
+.dark .attendance-status.absent { background:#422630; color:#f5a5b5; }
 @media(max-width:760px) { .active-qr-panel { flex-wrap:wrap; padding:20px; } .attendance-summary { gap:10px; } .attendance-stat { padding:14px; gap:10px; } }
 @media(max-width:540px) { .active-qr-link { width:100%; } .attendance-heading,.records-heading { align-items:flex-start; flex-direction:column; gap:12px; } .attendance-summary { grid-template-columns:1fr; } .attendance-stat>div { display:flex; align-items:center; justify-content:space-between; width:100%; } .records-toolbar { padding:16px; } .records-search { flex-basis:100%; min-width:0; } .records-date { width:100%; justify-content:space-between; } .records-toolbar select { flex:1; } }
 </style>

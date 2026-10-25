@@ -55,7 +55,7 @@ const columns = [{key:'reason',label:'សំណើសុំច្បាប់'},
 
 <template>
   <div class="dashboard role-dashboard employee-home">
-    <header class="page-heading"><div><h1>ផ្ទាំងគ្រប់គ្រងផ្ទាល់ខ្លួន</h1><p>សូមស្វាគមន៍ {{ props.currentUser.nameKh || props.currentUser.nameEn || 'បុគ្គលិក' }} · ព័ត៌មានការងារសម្រាប់អ្នក</p></div><span class="date-badge"><CalendarDays :size="16" />{{ dateLabel(todayDate) }}</span></header>
+    <header class="workspace-page-header page-heading"><div><h1>ផ្ទាំងគ្រប់គ្រងផ្ទាល់ខ្លួន</h1><p>សូមស្វាគមន៍ {{ props.currentUser.nameKh || props.currentUser.nameEn || 'បុគ្គលិក' }} · ព័ត៌មានការងារសម្រាប់អ្នក</p></div><span class="date-badge"><CalendarDays :size="16" />{{ dateLabel(todayDate) }}</span></header>
     <div class="metrics-grid">
       <DashboardMetric title="ថ្ងៃមានកំណត់ត្រាក្នុងខែនេះ" :value="errors.attendance ? '—' : monthly" note="រាប់ថ្ងៃដែលមានកំណត់ត្រា មិនរាប់ស្ទួន" :icon="CalendarDays" color="blue" :loading="loading.attendance" />
       <DashboardMetric title="ប្រាក់ខែចុងក្រោយ" :value="errors.salary ? '—' : money(salaries[0]?.salary)" :note="salaries.length && !errors.salary ? dateLabel(salaries[0].date) : 'មិនទាន់មានទិន្នន័យ'" :icon="Wallet" color="green" :loading="loading.salary" />
@@ -96,7 +96,7 @@ select { min-height:42px; border:1px solid var(--line); border-radius:10px; back
 .eh-chart { display:grid; grid-template-columns:repeat(var(--months),minmax(0,1fr)); gap:10px; padding-top:28px; background:repeating-linear-gradient(to top,transparent 0,transparent 48px,var(--line) 49px,transparent 50px); }
 .eh-column { display:flex; flex-direction:column; align-items:center; min-width:0; }
 .eh-track { display:flex; align-items:flex-end; width:100%; max-width:42px; height:180px; }
-.eh-bar { display:block; position:relative; width:100%; border-radius:7px 7px 2px 2px; background:linear-gradient(to top,#008c9b,#53c5ca); transition:height .2s; }
+.eh-bar { display:block; position:relative; width:100%; border-radius:7px 7px 2px 2px; background:linear-gradient(to top,#008c9b,#53c5ca); transition:height .35s; }
 .eh-bar strong { position:absolute; bottom:100%; width:100%; text-align:center; font-size:11px; padding-bottom:6px; }
 .eh-month { font-size:10px; color:var(--muted); padding:12px 0 8px; white-space:nowrap; }
 .eh-chart-dense .eh-month { writing-mode:vertical-rl; min-height:64px; }

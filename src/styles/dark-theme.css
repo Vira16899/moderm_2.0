@@ -1,0 +1,88 @@
+/* Calm navy surfaces and restrained teal accents, shared by every role. */
+:root.dark, .app-shell.dark, .auth-page.dark, .dark .modal-surface {
+  color-scheme:dark;
+  --canvas:#0e1721;
+  --surface:#172432;
+  --surface-raised:#1e2e3d;
+  --surface-input:#111d29;
+  --ink:#e7eff5;
+  --muted:#a5b8c9;
+  --line:#304354;
+  --soft:#203746;
+  --blue:#65d3da;
+  --action-fill:linear-gradient(110deg,#37bfc7,#4dccd1);
+  --action-hover:linear-gradient(110deg,#62d2d7,#77dce0);
+  --action-shadow:0 3px 10px #00000018;
+  --workspace-shadow:0 4px 14px #00000014;
+  --ui-panel-shadow:0 3px 12px #00000012;
+  --chart-blue:#69b7ed;
+  --chart-teal:#52c9ca;
+  --chart-amber:#e8c26d;
+}
+.app-shell.dark { background:var(--canvas) !important; }
+.app-shell.dark :is(.app-sidebar,.app-header) { background:var(--surface); border-color:var(--line); box-shadow:none; }
+.app-shell.dark :is(.sidebar-user,.header-avatar,.app-header .icon-button,.profile-menu,.search-results) { background:var(--surface-raised); border-color:var(--line); box-shadow:none; }
+.app-shell.dark :is(.header-search,.date-badge,.panel-chip) { background:var(--surface-input); border-color:var(--line); color:var(--muted); }
+.app-shell.dark .sidebar-nav button { color:var(--muted); }
+.app-shell.dark .sidebar-nav button:not(.active):hover { color:var(--ink); background:var(--soft); }
+.app-shell.dark .sidebar-nav button.active,.app-shell.dark .sidebar-nav button.active:hover { background:var(--action-fill); border-color:transparent; color:#102b35; box-shadow:none; }
+.app-shell.dark .sidebar-brand .brand-mark { background:linear-gradient(140deg,#169caa,#087f91); box-shadow:none; }
+.app-shell.dark :is(.metric-card,.dashboard-panel,.department-card,.documents-panel,.base-table-panel) { background:var(--surface); border-color:var(--line); }
+.app-shell.dark :is(.metric-icon,.pa-section-icon,.profile-section-icon,.department-card-icon) { background:#203b50; color:#81c9ee; box-shadow:none; }
+.app-shell.dark .metric-card.green .metric-icon { background:#1d3c35; color:#83d9b7; }
+.app-shell.dark .metric-card.amber .metric-icon { background:#3b3324; color:#ebc474; }
+.app-shell.dark .metric-card.violet .metric-icon { background:#34304c; color:#c2b2ee; }
+.app-shell.dark .metric-info strong { color:var(--ink); }
+.app-shell.dark .metric-info small { color:var(--muted); }
+.dark button.base-button[data-variant="primary"],.dark button:is(.small-primary,.primary-button,.bg-blue-600,.bg-blue-700),
+.app-shell.dark :is(.mi-primary,.eh-scan-link,.active-qr-link,.document-download,.el-create) {
+  background:var(--action-fill) !important; color:#102b35 !important; border-color:transparent; box-shadow:var(--action-shadow);
+}
+.dark button.base-button[data-variant="primary"]:hover:not(:disabled),.dark button:is(.small-primary,.primary-button,.bg-blue-600,.bg-blue-700):hover:not(:disabled),
+.app-shell.dark :is(.mi-primary,.eh-scan-link,.active-qr-link,.document-download,.el-create):hover { background:var(--action-hover) !important; }
+.dark .modal-surface button.secondary-button { background:var(--surface-raised) !important; color:var(--ink) !important; border-color:var(--line); }
+.dark .modal-surface button.secondary-button:hover:not(:disabled) { background:var(--soft) !important; }
+.app-shell.dark :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea),.dark .modal-surface :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea) {
+  color-scheme:dark; background:var(--surface-input); color:var(--ink); border-color:var(--line);
+}
+.app-shell.dark :is(input,textarea)::placeholder,.dark .modal-surface :is(input,textarea)::placeholder { color:#92a8bb; opacity:1; }
+.app-shell.dark :is(.records-search,.da-search,.el-search,.filter-select,.header-search) { background:var(--surface-input); border-color:var(--line); color:var(--muted); }
+.app-shell.dark :is(.header-search,.records-search,.da-search,.el-search) input { background:transparent; }
+.app-shell.dark .base-table th { background:#1c303e; color:#b6c8d6; border-color:var(--line); }
+.app-shell.dark .base-table td { color:var(--ink); border-color:var(--line); }
+.app-shell.dark .base-table tbody tr:hover,.app-shell.dark .base-table tbody tr:focus-within { background:#203746; }
+.app-shell.dark :is(.table-pagination,.salary-table-heading) { background:var(--surface); color:var(--muted); }
+.app-shell.dark :is(.pagination-number,.pagination-arrow) { background:var(--surface-input); color:var(--muted); border-color:var(--line); }
+.app-shell.dark .pagination-number.selected { background:var(--soft); border-color:#4b8992; color:var(--blue); }
+:root.dark :is(.app-shell,.modal-surface) :is(.status-pill,.ess-status,.leave-status,.attendance-status,.pa-status,.da-status) { background:#253a4a; color:#c0d5e4; width:max-content; max-width:100%; }
+:root.dark :is(.app-shell,.modal-surface) :is(.ess-status,.leave-status).pending,:root.dark :is(.app-shell,.modal-surface) :is(.attendance-status,.pa-status,.da-status).late { background:#3c3323; color:#f0cf86; }
+:root.dark :is(.app-shell,.modal-surface) :is(.status-pill,.ess-status,.leave-status).approved,:root.dark :is(.app-shell,.modal-surface) :is(.attendance-status,.pa-status,.da-status).present { background:#1d3c32; color:#9ae0bb; }
+:root.dark :is(.app-shell,.modal-surface) :is(.status-pill,.ess-status,.leave-status).rejected,:root.dark :is(.app-shell,.modal-surface) :is(.ess-status,.leave-status).cancelled,:root.dark :is(.app-shell,.modal-surface) :is(.attendance-status,.pa-status,.da-status).absent { background:#422b36; color:#f5acbc; }
+.app-shell.dark :is(.profile-form-error,.el-field-error,.document-field-error) { color:#f5acbc; }
+.app-shell.dark .skeleton-bar,.dark .modal-surface .skeleton-bar { background:#354c5e; }
+.app-shell.dark .trend-line,.app-shell.dark .trend-dot { stroke:var(--chart-teal); }
+.app-shell.dark .hiring-chart stop { stop-color:var(--chart-teal); }
+.app-shell.dark .chart-label { fill:var(--muted); }
+.app-shell.dark :is(.mi-bar,.eh-bar,.overview-bar-track>span) { background:linear-gradient(to top,#2297a2,#68d5d8); }
+.app-shell.dark .chart-guide { stroke:#6acbd4; }
+.dark .factory-toast { background:#1c343b; color:#def4f2; border-color:#355a61; border-left-color:#6cd4cf; box-shadow:0 10px 28px #00000040; }
+.dark .factory-toast>svg { color:#81dfcf; }
+.dark .factory-toast.error { background:#372832; color:#f8dce3; border-color:#64404f; border-left-color:#ec92aa; }
+.dark .factory-toast.error>svg { color:#f2a2b6; }
+.dark .modal-surface { background:var(--surface); border-color:var(--line); box-shadow:0 24px 70px #00000060; }
+.dark .auth-page,.auth-page.dark { background:var(--canvas); }
+.dark .auth-card { background:var(--surface); border-color:var(--line); box-shadow:0 18px 48px #00000025; }
+.dark .auth-form-panel { background:var(--surface); }
+.dark .auth-story { background:linear-gradient(145deg,#15313e,#1d4650); }
+.dark .auth-story .brand-logo { color:#eff8fa; }
+
+/* Neutral typography: color belongs to icons, charts and meaningful states. */
+:root.dark :is(.app-shell,.modal-surface) :is(h1,h2,h3,h4,h5,h6,strong):not(button *):not([role="alert"] *) { color:var(--ink) !important; }
+.app-shell.dark .recent-hire-list strong,.app-shell.dark .brand-logo strong { color:var(--ink) !important; }
+.auth-page.dark .auth-form-panel :is(h1,h2,h3,label),.dark .auth-form-panel :is(h1,h2,h3,label) { color:var(--ink); }
+.auth-page.dark .input-wrap,.dark .auth-page .input-wrap { background:var(--surface-input); border-color:var(--line); }
+.auth-page.dark .input-wrap input,.dark .auth-page .input-wrap input { color:var(--ink); }
+.auth-page.dark .input-wrap input::placeholder,.dark .auth-page .input-wrap input::placeholder { color:#92a8bb; }
+.auth-page.dark .text-button,.dark .auth-page .text-button { color:var(--blue); }
+.auth-page.dark .auth-story,.dark .auth-page .auth-story { background:radial-gradient(ellipse at 90% 95%,#235f6655,transparent 65%),linear-gradient(145deg,#15313e,#1b454d); }
+.auth-page.dark .primary-button,.dark .auth-page .primary-button { background:var(--action-fill); color:#102b35; border-color:transparent; }

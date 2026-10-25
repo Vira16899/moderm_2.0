@@ -17,7 +17,7 @@ export function normalizeManagerEmployee(item) {
     nameEn: user.nameEn ?? user.Eng_name ?? user.eng_name ?? user.name ?? '',
     email: user.email ?? '',
     role: 'EMPLOYEE',
-    status: user.is_active != null ? (Number(user.is_active) === 1 ? 'active' : 'inactive') : String(user.status ?? 'active').toLowerCase(),
+    status: user.is_active != null ? (Number(user.is_active) === 1 ? 'active' : 'inactive') : String(user.user_status ?? user.status ?? 'active').toLowerCase(),
     departmentId: String(user.departmentId ?? user.department_id ?? user.department?.id ?? ''),
     departmentKh: user.departmentKh ?? user.department_name ?? user.department?.name ?? '',
     departmentEn: user.departmentEn ?? user.department_name_en ?? user.department?.eng_name ?? '',

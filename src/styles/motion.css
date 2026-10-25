@@ -1,0 +1,37 @@
+/* Shared motion: geometry is identical in light/dark mode; no artificial delays. */
+.workspace-page { min-width:0; }
+@media(prefers-reduced-motion:no-preference) {
+  .workspace-page-enter-active { transition:opacity 180ms ease-out, transform 180ms ease-out; }
+  .workspace-page-leave-active { transition:opacity 90ms ease-in; }
+  .workspace-page-enter-from { opacity:0; transform:translateY(6px); }
+  .workspace-page-leave-to { opacity:0; }
+  .base-modal[open], .modal-overlay>div { animation:ui-dialog-enter 160ms ease-out; }
+  .base-modal[open]::backdrop, .modal-overlay { animation:ui-backdrop-enter 160ms ease-out; }
+  :is(.app-shell,.modal-surface) button, .app-shell a {
+    transition:background-color 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease, translate 100ms ease;
+  }
+  :is(.app-shell,.modal-surface) button:active:not(:disabled), .app-shell a:active { translate:0 1px; }
+  .app-shell :is(.base-table tbody tr,.sidebar-nav button) { transition:background-color 150ms ease, color 150ms ease; }
+  .app-shell .department-card { transition:translate 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }
+  .app-shell :is(.mi-bar,.eh-bar,.overview-bar-track>span) { transform-origin:bottom; animation:ui-chart-bar 350ms ease-out; }
+  .app-shell .hiring-chart .trend-line { stroke-dasharray:1; stroke-dashoffset:0; animation:ui-chart-line 350ms ease-out; }
+  .app-shell .hiring-chart .trend-area { animation:ui-content-enter 350ms ease-out; }
+  .app-shell .base-table tbody:not(.table-loading), .app-shell .metric-card[aria-busy="false"] .metric-info strong,
+  .app-shell :is(.pa-slots,.eh-slots,.mi-members,.recent-hire-list,.department-grid:not([aria-busy="true"])) { animation:ui-content-enter 160ms ease-out; }
+  .skeleton-bar { animation:skeleton-pulse 1.5s ease-in-out infinite alternate; }
+  @media(hover:hover) and (pointer:fine) {
+    .app-shell .department-card:hover { translate:0 -2px; }
+  }
+}
+@keyframes ui-dialog-enter { from { opacity:0; transform:scale(.98); } to { opacity:1; transform:scale(1); } }
+@keyframes ui-backdrop-enter { from { background-color:transparent; backdrop-filter:blur(0); } }
+@keyframes ui-chart-bar { from { transform:scaleY(0); } to { transform:scaleY(1); } }
+@keyframes ui-chart-line { from { stroke-dashoffset:1; } to { stroke-dashoffset:0; } }
+@keyframes ui-content-enter { from { opacity:0; } to { opacity:1; } }
+@media(prefers-reduced-motion:reduce) {
+  .workspace-page-enter-active,.workspace-page-leave-active { transition:none; }
+  .workspace-page-enter-from,.workspace-page-leave-to { opacity:1; transform:none; }
+  .app-shell *, .app-shell *::before, .app-shell *::after,
+  .base-modal[open], .base-modal[open]::backdrop, .modal-overlay, .modal-overlay>div { animation:none !important; transition:none !important; }
+  :is(.app-shell,.modal-surface) button:active:not(:disabled), .app-shell a:active, .app-shell .department-card:hover { translate:none; }
+}

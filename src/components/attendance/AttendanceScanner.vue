@@ -57,7 +57,7 @@ function onCameraError(cause) {
 button:focus-visible { outline:2px solid var(--scanner-accent); outline-offset:3px; }
 .scanner-spinning { animation:scanner-spin 1s linear infinite; } @keyframes scanner-spin { to { transform:rotate(360deg); } }
 :global(.dark dialog.attendance-scanner-modal) { --scanner-accent:#62d3dc; --scanner-soft:#18383f; }
-:global(.dark) .scanner-error { color:#f5a5b5; background:#422630; }
+.dark .scanner-error { color:#f5a5b5; background:#422630; }
 @media(max-height:600px) { :global(dialog.attendance-scanner-modal) { padding:16px; } .scanner-content { gap:12px; } }
 @media(prefers-reduced-motion:reduce) { .scanner-spinning { animation:none; } }
 </style>

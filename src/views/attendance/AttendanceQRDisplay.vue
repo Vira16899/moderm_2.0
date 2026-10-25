@@ -38,7 +38,7 @@ onUnmounted(() => window.clearInterval(refreshTimer));
 <template>
   <main class="tv-page">
     <header class="tv-header">
-      <p class="eyebrow">FACTORA · ប្រព័ន្ធវត្តមានបុគ្គលិក</p>
+      <p class="eyebrow">GARMORA · ប្រព័ន្ធវត្តមានបុគ្គលិក</p>
       <h1>ស្កេនដើម្បីកត់ត្រាវត្តមាន</h1>
       <p class="subtitle">សូមប្រើទូរស័ព្ទរបស់អ្នកស្កេន QR Code តាមវេនរបស់អ្នក។</p>
     </header>
@@ -77,7 +77,7 @@ onUnmounted(() => window.clearInterval(refreshTimer));
   color: #10243a;
   background: radial-gradient(ellipse at 8% 0%, #d4f6ff 0, transparent 45%),
     linear-gradient(125deg, #f1fbff, #e7f8fb 60%, #f7fcff);
-  font-family: var(--bs-body-font-family, "Poppins", "Hanuman", sans-serif);
+  font-family: var(--bs-body-font-family, "Poppins", "Kantumruy Pro", sans-serif);
 }
 
 .tv-header { margin: 0 auto 36px; text-align: center; }

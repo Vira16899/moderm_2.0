@@ -146,9 +146,9 @@ onMounted(refresh);
 
 <template>
  <section class="leave-page">
-  <header class="leave-page-heading"><div><h1>សំណើសុំច្បាប់</h1><p>ពិនិត្យ និងគ្រប់គ្រងសំណើសុំច្បាប់របស់បុគ្គលិក។</p></div></header>
+  <header class="workspace-page-header leave-page-heading"><div><h1>សំណើសុំច្បាប់</h1><p>ពិនិត្យ និងគ្រប់គ្រងសំណើសុំច្បាប់របស់បុគ្គលិក។</p></div></header>
   <div class="leave-summary" aria-label="ស្ថិតិសំណើសុំច្បាប់">
-   <button v-for="item in filters" :key="item.id" type="button" class="leave-summary-card" :class="[item.id, {active: activeFilter === item.id}]" :aria-pressed="activeFilter === item.id" @click="activeFilter = item.id"><span class="summary-icon"><component :is="item.icon" :size="21"/></span><span class="summary-copy"><span>{{ item.label }}</span><span v-if="loading" class="summary-skeleton" aria-hidden="true"></span><strong v-else>{{ counts[item.id] }}</strong></span></button>
+   <button v-for="item in filters" :key="item.id" type="button" class="leave-summary-card" :class="[item.id, {active: activeFilter === item.id}]" :aria-busy="loading" :disabled="loading" :aria-pressed="activeFilter === item.id" @click="activeFilter = item.id"><span class="summary-icon"><component :is="item.icon" :size="21"/></span><span class="summary-copy"><span>{{ item.label }}</span><BaseSkeleton v-if="loading" inline :lines="1" /><strong v-else>{{ counts[item.id] }}</strong></span></button>
   </div>
   <section class="leave-panel" aria-labelledby="leave-list-title">
    <div class="leave-toolbar"><div class="leave-list-title"><h2 id="leave-list-title">សំណើថ្មីៗ</h2><span v-if="!loading" class="leave-count">{{ visibleRequests.length }} សំណើ</span></div><div class="leave-toolbar-controls"><label class="leave-search"><Search :size="18" aria-hidden="true"/><input v-model="search" type="search" placeholder="ស្វែងរកឈ្មោះ ឬលេខបុគ្គលិក…" aria-label="ស្វែងរកសំណើ"/></label><select v-model="typeFilter" aria-label="តម្រងប្រភេទច្បាប់"><option value="all">គ្រប់ប្រភេទច្បាប់</option><option v-for="type in typeOptions" :key="type" :value="type">{{ leaveLabel(type) }}</option></select><BaseButton v-if="hasFilters" variant="ghost" size="sm" @click="resetFilters">សម្អាតតម្រង</BaseButton></div></div>
@@ -236,10 +236,10 @@ onMounted(refresh);
 .leave-reason { grid-column:1/-1; padding-top:20px; border-top:1px solid var(--line); }
 .leave-confirm-copy { font-size:14px; color:var(--muted); line-height:1.9; }
 .leave-confirm-name { font-weight:600; margin-top:12px; }
-:global(.dark) .summary-icon { background:#153a41; color:#68d2db; }
-:global(.dark) .pending .summary-icon,:global(.dark) .leave-status { background:#3a3020; color:#f5ce80; }
-:global(.dark) .approved .summary-icon,:global(.dark) .leave-status.approved { background:#183b30; color:#83dfb4; }
-:global(.dark) .rejected .summary-icon,:global(.dark) .leave-status.rejected,:global(.dark) .leave-status.cancelled { background:#422630; color:#f5a5b5; }
+.dark .summary-icon { background:#153a41; color:#68d2db; }
+.dark .pending .summary-icon,.dark .leave-status { background:#3a3020; color:#f5ce80; }
+.dark .approved .summary-icon,.dark .leave-status.approved { background:#183b30; color:#83dfb4; }
+.dark .rejected .summary-icon,.dark .leave-status.rejected,.dark .leave-status.cancelled { background:#422630; color:#f5a5b5; }
 @media(max-width:1100px) { .leave-toolbar { align-items:flex-start; flex-direction:column; } .leave-toolbar-controls { width:100%; justify-content:flex-start; } .leave-search { flex:1; width:auto; } .leave-summary-card { gap:10px; padding:16px; } }
 @media(max-width:640px) { .leave-page { gap:18px; } .leave-page-heading { align-items:flex-start; flex-direction:column; gap:12px; } .leave-page-heading p { font-size:13px; } .leave-summary { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .leave-summary-card { padding:14px 12px; gap:10px; border-radius:14px; } .summary-icon { width:36px; height:36px; border-radius:10px; } .summary-copy>span:first-child { font-size:11px; } .summary-copy strong { font-size:23px; } .leave-toolbar { padding:16px; gap:14px; } .leave-toolbar-controls { gap:10px; } .leave-search { width:100%; flex-basis:100%; } .leave-toolbar select { flex:1; } .leave-detail-person .leave-status { margin-left:58px; } }
 </style>

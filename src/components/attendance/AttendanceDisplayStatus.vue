@@ -24,7 +24,7 @@ defineProps({
     :class="{ 'display-error': error }"
   >
     <h1>
-      FACTORA
+      GARMORA
     </h1>
 
     <h2>

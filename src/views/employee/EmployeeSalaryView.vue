@@ -37,7 +37,7 @@ onMounted(load);
 
 <template>
   <div class="salary-page">
-    <header class="page-heading salary-heading"><div><h1>ប្រវត្តិប្រាក់ខែរបស់ខ្ញុំ</h1><p>តាមដានប្រាក់ខែចុងក្រោយ និងកំណត់ត្រាការផ្លាស់ប្ដូររបស់អ្នក។</p></div></header>
+    <header class="workspace-page-header page-heading salary-heading"><div><h1>ប្រវត្តិប្រាក់ខែរបស់ខ្ញុំ</h1><p>តាមដានប្រាក់ខែចុងក្រោយ និងកំណត់ត្រាការផ្លាស់ប្ដូររបស់អ្នក។</p></div></header>
     <section class="salary-overview" :aria-busy="loading" aria-label="សង្ខេបប្រាក់ខែ">
       <div class="salary-balance"><span class="salary-overline"><Wallet :size="18" />ប្រាក់ខែចុងក្រោយ<span class="salary-currency">USD</span></span><strong><BaseSkeleton v-if="loading" inline :lines="1" /><template v-else>{{ error ? '—' : money(latest?.salary) }}</template></strong><p>តាមកំណត់ត្រាចុងក្រោយពីប្រព័ន្ធ</p></div>
       <div class="salary-overview-details">

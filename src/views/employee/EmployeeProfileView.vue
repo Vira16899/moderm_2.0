@@ -1,6 +1,6 @@
 <script setup>
-import { computed, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch } from 'vue';
-import { UserRound, UsersRound, Mail, Phone, CalendarDays, ShieldCheck, BadgeCheck, Pencil, LockKeyhole, X, Save, Banknote, Upload, Trash2, LoaderCircle } from 'lucide-vue-next';
+import { computed, nextTick, onMounted, onBeforeUnmount, reactive, ref, watch, useId } from 'vue';
+import { UserRound, UsersRound, Mail, Phone, CalendarDays, ShieldCheck, BadgeCheck, Pencil, LockKeyhole, X, Save, Banknote, Upload, Trash2, LoaderCircle, Eye, EyeOff } from 'lucide-vue-next';
 import BaseModal from '../../components/base/BaseModal.vue';
 import BaseButton from '../../components/base/BaseButton.vue';
 import BaseSkeleton from '../../components/base/BaseSkeleton.vue';
@@ -8,7 +8,7 @@ import { labels } from '../../data/labels';
 import { auth } from '../../auth/index.js';
 import { PASSWORD_RULE } from '../../auth/passwordReset.js';
 import http, { API_BASE_URL } from '../../api/http.js';
-import { createProfileApi, profileDraft, profileValidation, profileError, passwordValidation, displayValue, displayDate, displaySalary, avatarUrl, NOT_PROVIDED } from '../../api/profile.js';
+import { createProfileApi, profileDraft, profileValidation, profileError, passwordChangeError, passwordFieldErrors, displayValue, displayDate, displaySalary, avatarUrl, NOT_PROVIDED } from '../../api/profile.js';
 import { localToday } from '../../api/employeeData.js';
 import { notify } from '../../stores/toasts.js';
 defineProps({ currentUser: Object });
@@ -16,13 +16,23 @@ const api = createProfileApi({ request: config => http.request(config), session:
 const user = computed(() => auth.state.user || {});
 const loading = ref(false), loaded = ref(false), loadError = ref('');
 const editing = ref(false), saving = ref(false), editError = ref('');
-const passwordOpen = ref(false), changingPassword = ref(false), passwordError = ref('');
+const passwordOpen = ref(false), changingPassword = ref(false);
 const imageFailed = ref(false);
 const avatarInput = ref(null), changingAvatar = ref(false), avatarError = ref('');
 const draft = reactive(profileDraft({}));
 const fieldErrors = ref({});
 const dirty = computed(() => JSON.stringify(draft) !== JSON.stringify(profileDraft(user.value)));
 const credentials = reactive({ oldPassword: '', newPassword: '', confirmPass: '' });
+const passwordId = useId();
+const passwordVisible = reactive({ oldPassword:false, newPassword:false, confirmPass:false });
+const passwordTouched = reactive({ oldPassword:false, newPassword:false, confirmPass:false });
+const passwordErrors = computed(() => passwordFieldErrors(credentials));
+const passwordFields = [
+  { key:'oldPassword', label:'ពាក្យសម្ងាត់បច្ចុប្បន្ន', placeholder:'បញ្ចូលពាក្យសម្ងាត់បច្ចុប្បន្ន', autocomplete:'current-password' },
+  { key:'newPassword', label:'ពាក្យសម្ងាត់ថ្មី', placeholder:'បង្កើតពាក្យសម្ងាត់ថ្មីពី ៨ ដល់ ៣០ តួអក្សរ', autocomplete:'new-password', max:30 },
+  { key:'confirmPass', label:'ផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់ថ្មី', placeholder:'បញ្ចូលពាក្យសម្ងាត់ថ្មីម្ដងទៀត', autocomplete:'new-password', max:30 },
+];
+
 let disposed = false;
 onBeforeUnmount(() => { disposed = true; clearPasswords(); });
 watch(() => user.value.avatar, () => { imageFailed.value = false; });
@@ -80,19 +90,23 @@ async function save() {
   } catch (error) { editError.value = profileError(error); if (!disposed) notify(editError.value, 'error'); }
   finally { saving.value = false; }
 }
-function clearPasswords() { Object.assign(credentials, { oldPassword: '', newPassword: '', confirmPass: '' }); }
-function openPassword() { clearPasswords(); passwordError.value = ''; passwordOpen.value = true; }
+function clearPasswords() {
+  Object.assign(credentials, { oldPassword: '', newPassword: '', confirmPass: '' });
+  for (const field of passwordFields) { passwordVisible[field.key] = false; passwordTouched[field.key] = false; }
+}
+function openPassword() { clearPasswords(); passwordOpen.value = true; }
 function closePassword() { if (!changingPassword.value) { passwordOpen.value = false; clearPasswords(); } }
 async function savePassword() {
   if (changingPassword.value) return;
-  passwordError.value = passwordValidation(credentials);
-  if (passwordError.value) return;
+  for (const field of passwordFields) passwordTouched[field.key] = true;
+  const firstError = passwordFields.find(field => passwordErrors.value[field.key]);
+  if (firstError) { await nextTick(); document.getElementById(passwordId + '-' + firstError.key)?.focus(); return; }
   changingPassword.value = true;
   try {
     await api.changePassword(credentials);
     clearPasswords(); passwordOpen.value = false;
     if (!disposed) notify('ពាក្យសម្ងាត់ត្រូវបានប្តូរដោយជោគជ័យ។');
-  } catch (error) { passwordError.value = profileError(error); if (!disposed) notify(passwordError.value, 'error'); }
+  } catch (error) { if (!disposed) notify(passwordChangeError(error), 'error'); }
   finally { changingPassword.value = false; }
 }
 const role = computed(() => labels[user.value.role] || displayValue(user.value.role));
@@ -124,7 +138,7 @@ const emergencyFields = [
 </script>
 <template>
   <div class="dashboard profile-page" :aria-busy="loading">
-    <div class="page-heading"><div><h1>ព័ត៌មានប្រវត្តិរូបរបស់ខ្ញុំ</h1><p>គ្រប់គ្រងព័ត៌មានផ្ទាល់ខ្លួន និងគណនីរបស់អ្នក</p></div></div>
+    <div class="workspace-page-header page-heading"><div><h1>ព័ត៌មានប្រវត្តិរូបរបស់ខ្ញុំ</h1><p>គ្រប់គ្រងព័ត៌មានផ្ទាល់ខ្លួន និងគណនីរបស់អ្នក</p></div></div>
     <div v-if="loading && !loaded" class="profile-layout"><BaseSkeleton :lines="7"/><BaseSkeleton :lines="9"/></div>
     <p v-else-if="loading" class="profile-loading" role="status">កំពុងទាញយកព័ត៌មានប្រវត្តិរូប…</p>
     <div v-if="loadError" class="profile-load-error" role="alert"><p>{{ loadError }}</p><button class="profile-secondary" :disabled="loading" @click="loadProfile">ព្យាយាមម្តងទៀត</button></div>
@@ -159,9 +173,18 @@ const emergencyFields = [
     </BaseModal>
     <BaseModal v-slot="{ close }" :busy="changingPassword" :dirty="Object.values(credentials).some(Boolean)" v-model="passwordOpen" title="ប្តូរពាក្យសម្ងាត់" class="account-action-modal" :close-on-backdrop="!changingPassword" :close-on-escape="!changingPassword" @close="closePassword">
       <div class="account-dialog-heading"><span class="profile-section-icon"><LockKeyhole :size="20" /></span><div><h2>ប្តូរពាក្យសម្ងាត់</h2><p>{{ user.email }}</p></div><button class="icon-button" aria-label="បិទ" :disabled="changingPassword" @click="close"><X :size="20" /></button></div>
-      <form class="profile-edit-form" :aria-busy="changingPassword" @submit.prevent="savePassword">
-        <fieldset class="profile-fields password-fields" :disabled="changingPassword"><label>ពាក្យសម្ងាត់បច្ចុប្បន្ន<input v-model="credentials.oldPassword" type="password" autocomplete="current-password" required /></label><label>ពាក្យសម្ងាត់ថ្មី<input v-model="credentials.newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="30" aria-describedby="profile-password-rule" required /></label><label>ផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់ថ្មី<input v-model="credentials.confirmPass" type="password" autocomplete="new-password" minlength="8" maxlength="30" required /></label></fieldset>
-        <p id="profile-password-rule" class="profile-password-rule">{{ PASSWORD_RULE }}</p><p v-if="passwordError" class="profile-form-error" role="alert">{{ passwordError }}</p>
+      <form novalidate class="profile-edit-form" :aria-busy="changingPassword" @submit.prevent="savePassword">
+        <fieldset class="profile-fields password-fields" :disabled="changingPassword">
+          <div v-for="field in passwordFields" :key="field.key" class="profile-password-field">
+            <label :for="passwordId + '-' + field.key">{{ field.label }}</label>
+            <div class="profile-password-input" :class="{ 'has-error': passwordTouched[field.key] && passwordErrors[field.key] }">
+              <input :id="passwordId + '-' + field.key" v-model="credentials[field.key]" :type="passwordVisible[field.key] ? 'text' : 'password'" :autocomplete="field.autocomplete" :placeholder="field.placeholder" :maxlength="field.max" :spellcheck="false" autocapitalize="off" required :aria-invalid="!!(passwordTouched[field.key] && passwordErrors[field.key])" :aria-describedby="[field.key === 'newPassword' ? passwordId + '-rule' : '', passwordTouched[field.key] && passwordErrors[field.key] ? passwordId + '-' + field.key + '-error' : ''].filter(Boolean).join(' ') || undefined" @blur="passwordTouched[field.key] = true" />
+              <button type="button" class="profile-password-toggle" :aria-label="(passwordVisible[field.key] ? 'លាក់ ' : 'បង្ហាញ ') + field.label" :title="passwordVisible[field.key] ? 'លាក់ពាក្យសម្ងាត់' : 'បង្ហាញពាក្យសម្ងាត់'" :aria-pressed="passwordVisible[field.key]" :aria-controls="passwordId + '-' + field.key" @click="passwordVisible[field.key] = !passwordVisible[field.key]"><EyeOff v-if="passwordVisible[field.key]" :size="18" aria-hidden="true" /><Eye v-else :size="18" aria-hidden="true" /></button>
+            </div>
+            <p v-if="field.key === 'newPassword'" :id="passwordId + '-rule'" class="profile-password-rule">{{ PASSWORD_RULE }}</p>
+            <p v-if="passwordTouched[field.key] && passwordErrors[field.key]" :id="passwordId + '-' + field.key + '-error'" class="profile-form-error" role="alert">{{ passwordErrors[field.key] }}</p>
+          </div>
+        </fieldset>
         <div class="profile-form-actions"><button type="button" class="profile-secondary" :disabled="changingPassword" @click="close">បោះបង់</button><BaseButton type="submit" :loading="changingPassword">ប្តូរពាក្យសម្ងាត់</BaseButton></div>
       </form>
     </BaseModal>
@@ -169,6 +192,17 @@ const emergencyFields = [
 </template>
 
 <style scoped>
+.profile-password-field { display:grid; gap:8px; min-width:0; }
+.profile-password-input { position:relative; }
+.profile-password-input input { min-height:48px; padding-right:52px; }
+.profile-password-input input::placeholder { color:var(--muted); font-size:12px; opacity:.85; }
+.profile-password-input.has-error input { border-color:#be4560; }
+.profile-password-toggle { position:absolute; right:3px; top:50%; transform:translateY(-50%); display:grid; place-items:center; width:44px; height:44px; padding:0; border:0; border-radius:9px; background:transparent; color:var(--muted); cursor:pointer; }
+.profile-password-toggle:hover:not(:disabled) { color:var(--blue); background:var(--soft); }
+.profile-password-toggle:focus-visible { outline:2px solid var(--blue); outline-offset:-3px; }
+.profile-password-field .profile-password-rule { margin:0; font-size:11px; line-height:1.9; }
+.profile-password-field .profile-form-error { margin:0; font-size:12px; line-height:1.8; }
+
 .profile-account-facts { width:100%; margin:20px 0 24px; padding:4px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); text-align:left; }
 .profile-account-facts>div { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 0; }
 .profile-account-facts>div+div { border-top:1px solid var(--line); }

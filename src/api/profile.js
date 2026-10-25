@@ -43,6 +43,16 @@ export function profileValidation(draft, today) {
   if (date && (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date || date > today)) errors.date_of_birth = 'សូមបញ្ចូលថ្ងៃខែឆ្នាំកំណើតត្រឹមត្រូវ។';
   return errors;
 }
+export function passwordFieldErrors({ oldPassword, newPassword, confirmPass }) {
+  const errors = {};
+  if (!oldPassword) errors.oldPassword = 'សូមបញ្ចូលពាក្យសម្ងាត់បច្ចុប្បន្ន។';
+  if (!newPassword) errors.newPassword = 'សូមបញ្ចូលពាក្យសម្ងាត់ថ្មី។';
+  else if (oldPassword === newPassword) errors.newPassword = 'ពាក្យសម្ងាត់ថ្មីត្រូវខុសពីពាក្យសម្ងាត់បច្ចុប្បន្ន។';
+  else if (!validPassword(newPassword)) errors.newPassword = PASSWORD_RULE;
+  if (!confirmPass) errors.confirmPass = 'សូមបញ្ចូលពាក្យសម្ងាត់ថ្មីម្ដងទៀត។';
+  else if (newPassword !== confirmPass) errors.confirmPass = 'ពាក្យសម្ងាត់ថ្មីទាំងពីរត្រូវតែដូចគ្នា។';
+  return errors;
+}
 export function passwordValidation({ oldPassword, newPassword, confirmPass }) {
   if (!oldPassword || !newPassword || !confirmPass) return 'សូមបំពេញពាក្យសម្ងាត់គ្រប់ប្រអប់។';
   if (newPassword !== confirmPass) return 'ពាក្យសម្ងាត់ថ្មីទាំងពីរត្រូវតែដូចគ្នា។';
@@ -67,6 +77,19 @@ export function avatarUrl(value, baseUrl) {
   if (/^https?:\/\//i.test(value)) return value;
   if (/^(?:[a-z]+:|\/\/)/i.test(value)) return '';
   return `${baseUrl.replace(/\/$/, '')}/${value.replace(/^\//, '')}`;
+}
+export function passwordChangeError(error = {}) {
+  const message = profileError(error);
+  if (/(old|current).*password.*(incorrect|invalid|wrong|not match)|incorrect.*(old|current).*password/i.test(message)) return 'ពាក្យសម្ងាត់បច្ចុប្បន្នមិនត្រឹមត្រូវ។ សូមពិនិត្យហើយព្យាយាមម្ដងទៀត។';
+  if (/password.*(same|different)|new.*password.*old/i.test(message)) return 'ពាក្យសម្ងាត់ថ្មីត្រូវខុសពីពាក្យសម្ងាត់បច្ចុប្បន្ន។';
+  if (/confirm|password.*(match|mismatch)/i.test(message)) return 'ពាក្យសម្ងាត់ថ្មីទាំងពីរត្រូវតែដូចគ្នា។';
+  if (/password.*(length|character|uppercase|lowercase|number|special|space|weak|complex|least)/i.test(message)) return PASSWORD_RULE;
+  if (/[\u1780-\u17ff]/.test(message) && !/[a-z]/i.test(message)) return message;
+  if (error.response?.status === 429) return 'សូមរង់ចាំ មុនពេលព្យាយាមម្ដងទៀត។';
+  if (error.response?.status === 401) return 'ការចូលប្រើបានផុតកំណត់។ សូមចូលគណនីម្ដងទៀត។';
+  if (error.response?.status === 403) return 'អ្នកមិនមានសិទ្ធិធ្វើសកម្មភាពនេះទេ។';
+  if (error.request || /network|fetch|timeout|connection/i.test(message)) return 'មិនអាចភ្ជាប់ទៅម៉ាស៊ីនមេបានទេ។ សូមពិនិត្យការតភ្ជាប់ ហើយព្យាយាមម្ដងទៀត។';
+  return 'មិនអាចប្តូរពាក្យសម្ងាត់បានទេ។ សូមព្យាយាមម្ដងទៀត។';
 }
 export function profileError(error) {
   const payload = error.response?.data;

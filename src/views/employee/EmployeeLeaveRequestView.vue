@@ -102,7 +102,7 @@ onMounted(load);
 
 <template>
   <div class="ess-page employee-leave-page compact-leave-page" :class="{ 'manager-leave-page': manager }">
-    <header class="ml-heading"><div><h1>{{ manager ? 'សំណើសុំច្បាប់' : 'ស្នើសុំច្បាប់ឈប់សម្រាក' }}</h1><p>ដាក់សំណើ កែប្រែ និងតាមដានស្ថានភាពឈប់សម្រាករបស់អ្នក។</p></div><div class="ml-heading-actions"><BaseButton :disabled="busy" @click="openForm()"><Plus :size="17" />ស្នើសុំច្បាប់ថ្មី</BaseButton></div></header>
+    <header class="workspace-page-header ml-heading"><div><h1>{{ manager ? 'សំណើសុំច្បាប់' : 'ស្នើសុំច្បាប់ឈប់សម្រាក' }}</h1><p>ដាក់សំណើ កែប្រែ និងតាមដានស្ថានភាពឈប់សម្រាករបស់អ្នក។</p></div><div class="ml-heading-actions"><BaseButton :disabled="busy" @click="openForm()"><Plus :size="17" />ស្នើសុំច្បាប់ថ្មី</BaseButton></div></header>
     <div class="el-summary" aria-label="សង្ខេបសំណើសុំច្បាប់">
       <div v-for="item in summaries" :key="item.value" class="el-summary-card" :class="item.color" :aria-busy="loading">
         <span class="el-summary-icon"><component :is="item.icon" :size="21" /></span><div><span>{{ item.label }}</span><strong><BaseSkeleton v-if="loading" inline :lines="1" /><template v-else>{{ error ? '—' : number(item.count) }}</template></strong></div>
@@ -249,7 +249,7 @@ onMounted(load);
 .el-icon-button:hover:not(:disabled) { border-color: var(--blue); color: var(--blue); background: var(--soft); }
 .el-cancel { color: #be123c; }
 .el-row-actions :deep(button.el-cancel) { color: #be123c !important; }
-:global(.dark) .el-row-actions :deep(button.el-cancel), :global(.dark) .el-icon-button.el-cancel { color: #fda4af !important; }
+.dark .el-row-actions :deep(button.el-cancel), .dark .el-icon-button.el-cancel { color: #fda4af !important; }
 .el-cancel:hover:not(:disabled) { border-color: #f1abb8; color: #be123c; background: #fff1f2; }
 .el-icon-button:disabled, .el-refresh:disabled, .el-create:disabled { opacity: .45; cursor: not-allowed; }
 .el-empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 55px 20px; color: var(--muted); text-align: center; border-top: 1px solid var(--line); }

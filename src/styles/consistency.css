@@ -1,0 +1,87 @@
+/* Shared workspace rhythm and states for admin, manager, and employee pages. */
+.app-shell {
+  --ui-space: 24px;
+  --ui-card-radius: 20px;
+  --ui-control-radius: 11px;
+  --ui-panel-shadow: 0 3px 14px #16354a05;
+}
+.app-shell .workspace-content .workspace-page-header {
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+  gap:16px 24px; min-width:0; padding:0; margin:0; background:transparent;
+}
+.app-shell .workspace-content .workspace-page-header>div:first-child { min-width:0; }
+.app-shell .workspace-content .workspace-page-header h1 {
+  font-size:clamp(24px,2.3vw,30px); line-height:1.6; font-weight:700;
+  letter-spacing:normal; margin:0 0 6px; color:var(--ink); overflow-wrap:anywhere;
+}
+.app-shell .workspace-content .workspace-page-header p { font-size:12px; line-height:1.9; color:var(--muted); margin:0; max-width:76ch; }
+.app-shell .workspace-content .workspace-page-header>div:last-child:not(:first-child) { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+.app-shell .workspace-content .workspace-page-header :is(button,a) { min-height:44px; border-radius:var(--ui-control-radius); font-size:12px; }
+.app-shell .workspace-content .workspace-page-header :is(button,a)>svg { width:18px; height:18px; flex-shrink:0; }
+.app-shell .workspace-content :is(.dashboard-panel,.metric-card,.department-card,.salary-history,.el-history,.pa-history,.da-panel,.eh-recent) {
+  border-radius:var(--ui-card-radius); box-shadow:var(--ui-panel-shadow);
+}
+.app-shell .workspace-content :is(.dashboard-panel,.metric-card,.department-card) { border-color:var(--line); }
+.app-shell .workspace-content :is(.dashboard-panel,.salary-table-heading,.el-panel-heading,.pa-panel-heading,.da-heading,.records-heading) h2 { font-size:17px; line-height:1.7; font-weight:650; }
+.app-shell .workspace-content h2>svg { width:20px; height:20px; flex-shrink:0; stroke-width:1.8; }
+.app-shell .workspace-content .metric-info { min-width:0; gap:7px; }
+.app-shell .workspace-content .metric-info>span { font-size:12px; line-height:1.8; }
+.app-shell .workspace-content .metric-info small { color:var(--muted); font-size:11px; line-height:1.8; }
+.app-shell .workspace-content .metric-icon { width:42px; height:42px; border-radius:12px; box-shadow:none; }
+.app-shell .workspace-content .metric-icon svg { width:21px; height:21px; stroke-width:1.8; }
+.base-button .base-button-content>svg { width:17px; height:17px; flex-shrink:0; stroke-width:1.8; }
+.app-shell .workspace-content :is(.ess-status,.leave-status,.attendance-status,.pa-status,.da-status) { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:4px 10px; font-size:11px; line-height:1.7; font-weight:500; white-space:nowrap; }
+.app-shell .workspace-content .base-table td { font-size:12px; line-height:1.8; }
+.app-shell .workspace-content .base-table .table-loading td { height:64px; }
+.app-shell .workspace-content .table-loading td .skeleton-bar { height:14px; width:75%; min-width:32px; }
+.app-shell .workspace-content .table-loading td:nth-child(even) .skeleton-bar { width:55%; }
+.app-shell .workspace-content .table-loading td:last-child .skeleton-bar { width:46%; }
+.app-shell .workspace-content .department-card-loading { min-height:290px; padding:24px; border-radius:var(--ui-card-radius); }
+.app-shell .workspace-content :is(.mi-empty,.overview-empty,.ess-empty) { color:var(--muted); font-size:12px; line-height:1.9; }
+.app-shell :where(button,a,input,select,textarea,[tabindex]):focus-visible,
+dialog :where(button,a,input,select,textarea,[tabindex]):focus-visible {
+  outline:2px solid var(--blue); outline-offset:3px;
+}
+.app-shell :where(input,select,textarea):disabled { cursor:not-allowed; }
+.app-shell :where(button):disabled { cursor:not-allowed; }
+.app-shell .base-table-scroll:focus-visible { outline-offset:-3px; }
+.app-shell .workspace-content .base-table .clickable-row:focus-visible { outline-offset:-2px; }
+@media(max-width:760px) {
+  .app-shell { --ui-space:18px; --ui-card-radius:16px; }
+  .app-shell .workspace-content .workspace-page-header { align-items:flex-start; gap:14px; }
+  .app-shell .workspace-content .workspace-page-header h1 { font-size:24px; }
+  .app-shell .workspace-content .workspace-page-header p { font-size:12px; }
+  .app-shell .workspace-content .workspace-page-header>div:last-child:not(:first-child) { max-width:100%; }
+  .app-shell .workspace-content .department-card-loading { min-height:270px; padding:20px; }
+}
+@media(pointer:coarse) {
+  .app-shell .workspace-content :is(.base-table td button,.pagination-controls button,.el-icon-button) { min-width:44px; min-height:44px; }
+}
+
+.app-shell .workspace-content .workspace-page-header.detail-page-heading { justify-content:flex-start; gap:16px 24px; }
+
+/* The workspace owns the viewport; long pages scroll only inside main. */
+html:has(.app-shell), body:has(.app-shell) { height:100%; overflow:hidden; overscroll-behavior:none; }
+#root:has(.app-shell) { height:100%; min-height:0; }
+.app-shell { position:fixed; inset:0; width:100%; height:100dvh; max-height:100dvh; min-height:0; box-sizing:border-box; overflow:hidden; }
+.app-shell #main-content-scrollable { height:auto; min-height:0; max-height:100%; overflow-y:auto; overflow-x:hidden; overscroll-behavior-y:contain; scrollbar-gutter:stable; }
+.app-shell .workspace-content,.app-shell .workspace-page { min-width:0; }
+.app-shell .sidebar-nav { min-height:0; overscroll-behavior-y:contain; }
+
+/* Clear, aligned numerals for metrics, money, dates and chart values. */
+.app-shell :is(.metric-info strong,.salary-balance>strong,.salary-amount,.mi-trend-total>strong,.mi-donut strong,.role-donut strong,.team-donut strong,.pa-metric strong,.trend-summary>strong,.eh-trend-total>strong,.mi-bar>span,.eh-bar>span,.chart-label,.date-badge,.salary-date,.pagination-number) {
+  font-family:"Inter","Kantumruy Pro",sans-serif;
+  font-variant-numeric:lining-nums tabular-nums;
+  letter-spacing:0;
+}
+.app-shell :is(.metric-info strong,.salary-balance>strong,.salary-amount,.mi-trend-total>strong,.mi-donut strong,.role-donut strong,.team-donut strong,.pa-metric strong,.trend-summary>strong,.eh-trend-total>strong) { font-weight:600; }
+.app-shell .metric-info strong { font-size:28px; line-height:1.3; }
+@media(max-width:640px) { .app-shell .metric-info strong { font-size:24px; } }
+
+/* Shared emphasis: Inter SemiBold for Latin text and numerals, Khmer Medium fallback. */
+:is(.app-shell,.auth-page,.modal-surface,.factory-toast) :is(strong,b,h1,h2,h3,h4,h5,h6,th,.font-medium,.font-semibold,.font-bold,.font-extrabold,.font-black,.salary-currency,.auth-form>label) {
+  font-family:"Inter","Kantumruy Pro",sans-serif !important;
+  font-weight:600 !important;
+  font-variant-numeric:lining-nums tabular-nums;
+}
+.app-shell .salary-fact strong { letter-spacing:0; }

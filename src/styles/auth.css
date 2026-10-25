@@ -69,3 +69,26 @@
   .auth-form-content h2 { font-size: 25px; }
   .auth-topline { font-size: 11px; }
 }
+
+/* The supplied Garmora mark stays crisp and stable in both sidebar sizes. */
+.brand-logo .brand-mark { flex-shrink:0; overflow:hidden; background:transparent !important; box-shadow:none !important; border-radius:12px; }
+.brand-logo .brand-mark img { display:block; width:100%; height:100%; object-fit:contain; }
+.brand-logo strong { color:var(--ink); }
+.auth-story .brand-logo strong { color:#fff; }
+/* Consistent sign-in, verification and account recovery surfaces. */
+.auth-card { border-radius:24px; }
+.auth-story { background:radial-gradient(ellipse at 90% 95%,#18858a55,transparent 65%),linear-gradient(150deg,#153c48,#12636b); }
+.auth-story .brand-mark { width:48px; height:48px; }
+.auth-story .brand-logo small { opacity:1; color:#c8e5e6; font-size:11px; }
+.auth-form-panel { padding:30px 36px 26px; }
+.auth-form-content h2 { font-size:26px; }
+.auth-page .input-wrap { height:52px; background:#f5f9fa; border-color:#d5e3e7; border-radius:12px; }
+.auth-page .input-wrap input { font-size:14px; }
+.auth-page .input-wrap:focus-within { border-color:#008b99; box-shadow:0 0 0 3px #008b991a; }
+.auth-page .input-wrap button { min-width:36px; min-height:40px; display:grid; place-items:center; }
+.auth-page .primary-button { height:50px; border-radius:12px; background:#078795; border-color:#078795; box-shadow:0 4px 12px #008b991a; }
+.auth-page .primary-button:hover:not(:disabled) { background:#066e7a; }
+.auth-page .text-button,.auth-page .brand-dot { color:#087f8c; }
+.auth-help { padding-top:18px; border-top:1px solid var(--line); }
+.auth-panel-footer { gap:8px; }
+@media (max-width:640px) { .auth-form-panel { padding:24px; } .auth-story .brand-mark { width:42px; height:42px; } }

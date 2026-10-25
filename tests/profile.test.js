@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import axios from 'axios';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
-import { createProfileApi, profileBody, profileDraft, profileValidation, passwordValidation, profileError, displayValue, displaySalary, displayDate, NOT_PROVIDED, avatarUrl } from '../src/api/profile.js';
+import { createProfileApi, profileBody, profileDraft, profileValidation, passwordValidation, passwordFieldErrors, passwordChangeError, profileError, displayValue, displaySalary, displayDate, NOT_PROVIDED, avatarUrl } from '../src/api/profile.js';
 import { createSession } from '../src/auth/session.js';
 import { installAuthInterceptors } from '../src/auth/interceptors.js';
 
@@ -170,4 +170,28 @@ test('full profile payload supports the supplied contract and optional contact v
  assert.ok(profileValidation({...draft,newphone:''},'2026-10-25').newphone);
  assert.equal(profileDraft({gender:'female',birthday:'1995-06-15',nameKh:'សុខ',nameEn:'Sok'}).gender,'FEMALE');
  assert.equal(profileDraft({birthday:'1995-06-15'}).date_of_birth,'1995-06-15');
+});
+
+
+test('change password returns Khmer field errors without modifying the current password', () => {
+  const empty = passwordFieldErrors({oldPassword:'',newPassword:'',confirmPass:''});
+  assert.deepEqual(Object.keys(empty), ['oldPassword','newPassword','confirmPass']);
+  assert.ok(Object.values(empty).every(message => /[\u1780-\u17ff]/.test(message)));
+  const valid = {oldPassword:'Old1!pass',newPassword:'New2!pass',confirmPass:'New2!pass'};
+  assert.deepEqual(passwordFieldErrors(valid), {});
+  assert.ok(passwordFieldErrors({...valid,newPassword:valid.oldPassword,confirmPass:valid.oldPassword}).newPassword);
+  assert.ok(passwordFieldErrors({...valid,newPassword:'weak',confirmPass:'weak'}).newPassword);
+  assert.ok(passwordFieldErrors({...valid,confirmPass:'different'}).confirmPass);
+  assert.deepEqual(passwordFieldErrors({...valid,oldPassword:'legacy'}), {});
+});
+
+
+test('password API errors become Khmer toast messages without leaking English responses', () => {
+  const incorrect = passwordChangeError({response:{status:400,data:{message:'Old password is incorrect.'}}});
+  assert.match(incorrect, /ពាក្យសម្ងាត់បច្ចុប្បន្ន/);
+  assert.ok(!/[a-z]/i.test(incorrect));
+  for (const cause of [new Error('Current password is invalid.'), new Error('Unknown backend failure'), {response:{status:500,data:{message:'Internal server error'}}}]) {
+    assert.ok(!/[a-z]/i.test(passwordChangeError(cause)));
+  }
+  assert.match(passwordChangeError({response:{status:429,data:{message:'Too many requests'}}}), /រង់ចាំ/);
 });

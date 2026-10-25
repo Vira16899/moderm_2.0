@@ -9,6 +9,7 @@ import UserAvatar from '../../components/common/UserAvatar.vue';
 import BaseTable from '../../components/base/BaseTable.vue';
 import BaseButton from '../../components/base/BaseButton.vue';
 import BaseSkeleton from '../../components/base/BaseSkeleton.vue';
+import { employeeError } from '../../utils/employeeMessages';
 const props = defineProps({ user: { type: Object, required: true }, onBack: { type: Function, required: true }, onGetUser: Function, onSalaryHistory: Function, onEditSalary: Function, salaryVersion: Number, employeeView: Boolean });
 const heading = ref(null), detailUser = ref(null), loading = ref(false), loadError = ref(''), reload = ref(0);
 const history = ref([]), historyLoading = ref(false), historyError = ref(''), historyReload = ref(0);
@@ -19,7 +20,7 @@ watch([() => props.user.id, () => props.salaryVersion, reload], async (_value, _
   try {
     const user = props.onGetUser ? await props.onGetUser(props.user.id) : props.user;
     if (active) detailUser.value = user ? { ...props.user, ...user, ...userIdentityFields(user, props.user) } : null;
-  } catch (error) { if (active) loadError.value = error.message || 'មិនអាចទាញយកព័ត៌មានបានទេ។'; }
+  } catch (error) { if (active) loadError.value = employeeError(error, 'មិនអាចទាញយកព័ត៌មានបុគ្គលិកបានទេ។'); }
   finally { if (active) loading.value = false; }
 }, { immediate: true });
 watch([() => props.user.id, () => props.onSalaryHistory, () => props.salaryVersion, historyReload], async (_value, _old, onCleanup) => {
@@ -36,6 +37,11 @@ watch([() => props.user.id, () => props.onSalaryHistory, () => props.salaryVersi
 }, { immediate: true });
 const personal = computed(() => {
   const u = detailUser.value || {};
+  if (props.employeeView) return [
+    { label: 'ឈ្មោះជាខ្មែរ', value: u.nameKh },
+    { label: 'ឈ្មោះជាអង់គ្លេស', value: u.nameEn },
+    { label: 'ភេទ', value: { male: 'ប្រុស', female: 'ស្រី' }[String(u.gender || '').toLowerCase()] },
+  ];
   return [
     { label: 'លេខអត្តសញ្ញាណបណ្ណ', value: u.idCardNumber },
     { label: 'ឈ្មោះជាអង់គ្លេស', value: u.nameEn },
@@ -50,7 +56,7 @@ const employment = computed(() => {
     { label: 'នាយកដ្ឋាន', value: u.departmentKh },
     ...(String(u.role).toUpperCase() === 'MANAGER' ? [] : [{ label: 'មុខតំណែង', value: u.positionKh }]),
     { label: 'កាលបរិច្ឆេទចូលធ្វើការ', value: dateOnly(u.joinedDate) },
-    { label: 'ប្រាក់បៀវត្សគោល', value: u.salary == null ? null : money(u.salary) },
+    ...(props.employeeView ? [{ label: 'ស្ថានភាពគណនី', value: labels[u.status] || u.status }] : [{ label: 'ប្រាក់បៀវត្សគោល', value: u.salary == null ? null : money(u.salary) }]),
   ];
 });
 const historyColumns = computed(() => [
@@ -66,7 +72,7 @@ onMounted(() => {
 </script>
 <template>
   <div class="dashboard user-details-page" :id="employeeView ? 'manager-employee-details-page' : 'admin-user-details-page'" :aria-busy="loading">
-    <div class="detail-page-heading"><BaseButton variant="ghost" size="sm" @click="onBack"><ArrowLeft :size="17"/>{{ employeeView ? 'ត្រឡប់ទៅបញ្ជីបុគ្គលិក' : 'ត្រឡប់ទៅបញ្ជីអ្នកប្រើប្រាស់' }}</BaseButton><h1 ref="heading" tabindex="-1">{{ employeeView ? 'ព័ត៌មានបុគ្គលិក' : 'ព័ត៌មានអ្នកប្រើប្រាស់' }}</h1></div>
+    <div class="workspace-page-header detail-page-heading"><BaseButton variant="ghost" size="sm" @click="onBack"><ArrowLeft :size="17"/>{{ employeeView ? 'ត្រឡប់ទៅបញ្ជីបុគ្គលិក' : 'ត្រឡប់ទៅបញ្ជីអ្នកប្រើប្រាស់' }}</BaseButton><h1 ref="heading" tabindex="-1">{{ employeeView ? 'ព័ត៌មានបុគ្គលិក' : 'ព័ត៌មានអ្នកប្រើប្រាស់' }}</h1></div>
     <div v-if="loadError" class="profile-load-error" role="alert"><p>{{ loadError }}</p><BaseButton variant="outline" @click="reload++">ព្យាយាមម្ដងទៀត</BaseButton></div>
     <BaseSkeleton v-if="loading" :lines="6"/>
     <p v-else-if="!loadError && !detailUser" class="dashboard-panel text-center">រកមិនឃើញអ្នកប្រើប្រាស់នេះទេ។</p>

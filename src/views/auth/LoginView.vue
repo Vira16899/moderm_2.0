@@ -2,6 +2,7 @@
 import { computed, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowRight, ArrowLeft, Mail, LockKeyhole, Eye, EyeOff, Users, Zap, TrendingUp, ShieldCheck, Moon, Sun } from 'lucide-vue-next';
+import { applyTheme } from '../../utils/theme.js';
 import BrandLogo from '../../components/common/BrandLogo.vue';
 import OtpInput from '../../components/common/OtpInput.vue';
 import { validEmail } from '../../auth/passwordReset.js';
@@ -29,7 +30,7 @@ watch(() => passwordReset.state.notice, message => { if (message) { notify(messa
 const busy = ref(false);
 const remaining = ref(0);
 const theme = ref(localStorage.getItem('app_theme') || 'light');
-watch(theme, value => { localStorage.setItem('app_theme', value); document.documentElement.classList.toggle('dark', value === 'dark'); }, { immediate: true });
+watch(theme, value => applyTheme(value), { immediate: true });
 function onToggleTheme() { theme.value = theme.value === 'dark' ? 'light' : 'dark'; }
 watch(isOtp, () => { errors.value = {}; otp.value = ''; });
 const timer = setInterval(() => { if (remaining.value > 0) remaining.value--; }, 1000);
@@ -48,6 +49,7 @@ async function login() {
     password.value = '';
     remaining.value = user ? 0 : 30;
     await router.replace(user ? dashboardPath(user) : '/verify-admin-otp');
+    if (user) notify('បានចូលប្រើប្រាស់ដោយជោគជ័យ។ សូមស្វាគមន៍!');
   } catch (cause) { notify(authError(cause), 'error'); }
   finally { busy.value = false; }
 }
@@ -55,7 +57,7 @@ async function verify() {
   if (busy.value) return;
   if (!/^\d{6}$/.test(otp.value)) { errors.value.otp = 'សូមបញ្ចូលលេខកូដ ៦ ខ្ទង់។'; document.getElementById('admin-otp')?.focus(); return; }
   busy.value = true;
-  try { const user = await auth.verifyOtp(otp.value); otp.value = ''; await router.replace(dashboardPath(user)); }
+  try { const user = await auth.verifyOtp(otp.value); otp.value = ''; await router.replace(dashboardPath(user)); notify('បានចូលប្រើប្រាស់ដោយជោគជ័យ។ សូមស្វាគមន៍!'); }
   catch (cause) { notify(authError(cause, 'verify'), 'error'); }
   finally { busy.value = false; }
 }
@@ -85,7 +87,7 @@ async function retrySession() {
           <div class="story-features"><span><Users :size="16"/>{{ 'បុគ្គលិក' }}</span><span><Zap :size="16"/>{{ 'ដំណើរការ' }}</span><span><TrendingUp :size="16"/>{{ 'ការរីកចម្រើន' }}</span></div>
         </div>
         <div class="factory-art" aria-hidden="true"><div class="art-orbit"></div><div class="art-sun"></div>
-          <svg viewBox="0 0 540 300" fill="none"><defs><linearGradient id="building" x1="110" y1="30" x2="300" y2="300" gradientUnits="userSpaceOnUse"><stop stop-color="#a9d3f9"/><stop offset="1" stop-color="#326aab"/></linearGradient><linearGradient id="glass" x1="200" y1="70" x2="400" y2="290" gradientUnits="userSpaceOnUse"><stop stop-color="#1b5189"/><stop offset="1" stop-color="#102e5d"/></linearGradient></defs><path d="M0 274 350 152 540 225V300H0Z" fill="#0c3773"/><path d="m80 142 180-70 192 64v151L260 238 80 297Z" fill="url(#building)"/><path d="m260 72 192 64v151l-192-49Z" fill="url(#glass)"/><path d="m94 159 151-56v124L94 277Z" fill="#2d6198"/><path d="m260 106 192 63M260 150l192 59M260 195l192 55M307 90v159M354 106v155M402 122v150M130 145v122M170 130v124M210 115v124M94 195l151-54M94 234l151-52" stroke="#acd7f7" stroke-opacity=".4" stroke-width="2"/><path d="m65 140 195-80 210 70-18 9-192-64-180 75Z" fill="#d4e9fa"/><path d="M333 221v36l37 10v-35Z" fill="#96c3e7"/><text x="286" y="142" fill="white" font-size="19" font-family="Arial" transform="rotate(18 286 142)">GarmentPro</text><path d="M34 296v-56M478 292v-66" stroke="#2a638b" stroke-width="7"/><circle cx="34" cy="230" r="30" fill="#3987a1"/><circle cx="478" cy="217" r="37" fill="#327a97"/><circle cx="499" cy="238" r="23" fill="#3a91a3"/></svg>
+          <svg viewBox="0 0 540 300" fill="none"><defs><linearGradient id="building" x1="110" y1="30" x2="300" y2="300" gradientUnits="userSpaceOnUse"><stop stop-color="#a9d3f9"/><stop offset="1" stop-color="#326aab"/></linearGradient><linearGradient id="glass" x1="200" y1="70" x2="400" y2="290" gradientUnits="userSpaceOnUse"><stop stop-color="#1b5189"/><stop offset="1" stop-color="#102e5d"/></linearGradient></defs><path d="M0 274 350 152 540 225V300H0Z" fill="#0c3773"/><path d="m80 142 180-70 192 64v151L260 238 80 297Z" fill="url(#building)"/><path d="m260 72 192 64v151l-192-49Z" fill="url(#glass)"/><path d="m94 159 151-56v124L94 277Z" fill="#2d6198"/><path d="m260 106 192 63M260 150l192 59M260 195l192 55M307 90v159M354 106v155M402 122v150M130 145v122M170 130v124M210 115v124M94 195l151-54M94 234l151-52" stroke="#acd7f7" stroke-opacity=".4" stroke-width="2"/><path d="m65 140 195-80 210 70-18 9-192-64-180 75Z" fill="#d4e9fa"/><path d="M333 221v36l37 10v-35Z" fill="#96c3e7"/><text x="286" y="142" fill="white" font-size="19" font-family="Arial" transform="rotate(18 286 142)">Garmora</text><path d="M34 296v-56M478 292v-66" stroke="#2a638b" stroke-width="7"/><circle cx="34" cy="230" r="30" fill="#3987a1"/><circle cx="478" cy="217" r="37" fill="#327a97"/><circle cx="499" cy="238" r="23" fill="#3a91a3"/></svg>
         </div>
         <div class="story-footer"><span>ធ្វើការរួមគ្នា<br/><strong>រីកចម្រើនរួមគ្នា</strong></span><span class="story-dots"><i></i><i></i><i></i></span></div>
       </aside>
@@ -113,6 +115,6 @@ async function retrySession() {
         <div class="auth-panel-footer"><ShieldCheck :size="14"/><span>បង្កើតឡើងសម្រាប់ក្រុមការងាររបស់អ្នក។</span></div>
       </section>
     </main>
-    <footer class="auth-page-footer"><span>{{ new Date().getFullYear() }} GarmentPro</span><span>រួមគ្នាឆ្ពោះទៅរកភាពរីកចម្រើន</span></footer>
+    <footer class="auth-page-footer"><span>{{ new Date().getFullYear() }} Garmora</span><span>រួមគ្នាឆ្ពោះទៅរកភាពរីកចម្រើន</span></footer>
   </div>
 </template>

@@ -2,7 +2,7 @@
   setup>  import QrcodeVue from "qrcode.vue"; defineProps({ session: { type: Object, required: true, }, }); const sessionLabels = { MORNING_CHECK_IN: "Morning Check In", MORNING_CHECK_OUT: "Morning Check Out", AFTERNOON_CHECK_IN: "Afternoon Check In", AFTERNOON_CHECK_OUT: "Afternoon Check Out", }; function getSessionLabel(type) { return sessionLabels[type] || type; } </script>
 <template>
   <div class="qr-card"> <!-- Factory Name -->
-    <div class="factory-name"> FACTORA </div> <!-- Attendance -->
+    <div class="factory-name"> GARMORA </div> <!-- Attendance -->
     <div class="attendance-title"> ATTENDANCE </div> <!-- Session -->
     <h2 class="session-title"> {{ getSessionLabel(session.session_type) }} </h2> <!-- QR Code -->
     <div class="qr-wrapper">

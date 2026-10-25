@@ -64,7 +64,7 @@ onMounted(() => { document.getElementById('main-content-scrollable')?.scrollTo({
 </script>
 <template>
   <div class="dashboard department-details-page" :aria-busy="loading">
-    <div class="detail-page-heading"><BaseButton variant="ghost" size="sm" @click="onBack?.()"><ArrowLeft :size="17"/>ត្រឡប់ទៅបញ្ជីនាយកដ្ឋាន</BaseButton><h1 ref="heading" tabindex="-1">ព័ត៌មាននាយកដ្ឋាន</h1></div>
+    <div class="workspace-page-header detail-page-heading"><BaseButton variant="ghost" size="sm" @click="onBack?.()"><ArrowLeft :size="17"/>ត្រឡប់ទៅបញ្ជីនាយកដ្ឋាន</BaseButton><h1 ref="heading" tabindex="-1">ព័ត៌មាននាយកដ្ឋាន</h1></div>
     <BaseSkeleton v-if="loading" :lines="6" label="កំពុងទាញយកព័ត៌មាននាយកដ្ឋាន…"/>
     <div v-else-if="error" class="profile-load-error" role="alert"><p>{{ error }}</p><BaseButton variant="outline" @click="retry++">ព្យាយាមម្ដងទៀត</BaseButton></div>
     <template v-else>

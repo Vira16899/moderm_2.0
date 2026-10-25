@@ -77,6 +77,6 @@ select { min-height:44px; padding:8px 10px; border:1px solid var(--line); border
 .da-time { font-variant-numeric:tabular-nums; white-space:nowrap; font-size:12px; } .da-present { color:#18744f; font-weight:600; }
 .da-status { display:inline-flex; align-items:center; padding:4px 9px; font-size:11px; border-radius:20px; color:var(--muted); background:var(--soft); white-space:nowrap; }
 .da-status.present { color:#18744f; background:#e4f6ec; } .da-status.late { color:#936113; background:#fff5df; } .da-status.absent { color:#a53b50; background:#fff0f2; }
-:global(.dark) .da-present { color:#83dfb4; } :global(.dark) .da-status.present { background:#183b30; color:#83dfb4; } :global(.dark) .da-status.late { background:#3a3020; color:#f5ce80; } :global(.dark) .da-status.absent { background:#422630; color:#f5a5b5; }
+.dark .da-present { color:#83dfb4; } .dark .da-status.present { background:#183b30; color:#83dfb4; } .dark .da-status.late { background:#3a3020; color:#f5ce80; } .dark .da-status.absent { background:#422630; color:#f5a5b5; }
 @media(max-width:760px) { .da-summary { grid-template-columns:1fr; gap:10px; } .da-search { max-width:none; flex-basis:100%; } select { flex:1; } .da-toolbar { padding:16px; } .da-heading h2 { font-size:19px; } }
 </style>

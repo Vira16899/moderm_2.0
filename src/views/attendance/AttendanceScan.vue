@@ -54,7 +54,7 @@ onMounted(loadToday);
 
 <template>
   <section class="personal-attendance" :class="{ 'employee-attendance-page': !manager }">
-    <header class="pa-heading"><div><h1>វត្តមានរបស់ខ្ញុំ</h1><p>កត់ត្រាម៉ោងចូលចេញ និងពិនិត្យប្រវត្តិការងាររបស់អ្នក។</p></div><span class="pa-date"><CalendarDays :size="17" />{{ dateLabel(today) }}</span></header>
+    <header class="workspace-page-header pa-heading"><div><h1>វត្តមានរបស់ខ្ញុំ</h1><p>កត់ត្រាម៉ោងចូលចេញ និងពិនិត្យប្រវត្តិការងាររបស់អ្នក។</p></div><span class="pa-date"><CalendarDays :size="17" />{{ dateLabel(today) }}</span></header>
     <div class="pa-overview">
       <section class="pa-scan"><div class="pa-scan-copy"><span class="pa-scan-icon"><QrCode :size="26" /></span><h2>កត់ត្រាវត្តមានថ្ងៃនេះ</h2><p>ស្កេន QR សកម្មដែលបង្ហាញនៅកន្លែងធ្វើការ ដើម្បីកត់ត្រាម៉ោងចូល ឬម៉ោងចេញ។</p><BaseButton :loading="isSubmitting" :disabled="isSubmitting" @click="openScanner"><ScanLine :size="18" />បើកម៉ាស៊ីនស្កេន QR</BaseButton><small>សូមអនុញ្ញាតឱ្យប្រើកាមេរ៉ា នៅពេលបើកម៉ាស៊ីនស្កេន។</small></div><QrCode class="pa-scan-art" :size="150" :stroke-width="1" aria-hidden="true" /></section>
       <section class="pa-today" :aria-busy="isLoading" aria-labelledby="personal-today-title"><div class="pa-panel-heading"><div><h2 id="personal-today-title">វត្តមានថ្ងៃនេះ</h2><p>ម៉ោងដែលប្រព័ន្ធបានកត់ត្រា</p></div><span v-if="!isLoading && !errorMessage" class="pa-count">{{ number(recordedSlots) }}/{{ number(slots.length) }}</span></div><BaseSkeleton v-if="isLoading" :lines="2" /><p v-else-if="errorMessage" class="pa-muted">មិនទាន់អាចបង្ហាញវត្តមានបានទេ។</p><div v-else class="pa-slots"><div v-for="slot in slots" :key="slot.key"><span><CheckCircle2 v-if="slot.value" :size="17" /><Clock3 v-else :size="17" />{{ slot.label }}</span><strong :class="{recorded:slot.value}">{{ slot.value ? attendanceTime(slot.value) : 'មិនទាន់កត់ត្រា' }}</strong></div></div></section>
@@ -109,7 +109,7 @@ select { min-height:44px; border:1px solid var(--line); border-radius:10px; padd
 .pa-status.present { background:#e4f6ec; color:#18744f; } .pa-status.late { background:#fff5df; color:#936113; } .pa-status.absent { background:#fff0f2; color:#a53b50; }
 .pa-muted { font-size:12px; line-height:1.9; color:var(--muted); }
 input:focus-visible,select:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
-:global(.dark) .recorded { color:#83dfb4 !important; } :global(.dark) .pa-status.present,:global(.dark) .pa-metric-icon.green { color:#83dfb4; background:#183b30; } :global(.dark) .pa-status.late,:global(.dark) .pa-metric-icon.amber { color:#f5ce80; background:#3a3020; } :global(.dark) .pa-status.absent { color:#f5a5b5; background:#422630; }
+.dark .recorded { color:#83dfb4 !important; } .dark .pa-status.present,.dark .pa-metric-icon.green { color:#83dfb4; background:#183b30; } .dark .pa-status.late,.dark .pa-metric-icon.amber { color:#f5ce80; background:#3a3020; } .dark .pa-status.absent { color:#f5a5b5; background:#422630; }
 @media(max-width:1100px) { .pa-summary { grid-template-columns:repeat(2,minmax(0,1fr)); } .pa-toolbar { align-items:flex-start; } }
 @media(max-width:760px) { .pa-overview { grid-template-columns:1fr; gap:16px; } .pa-heading { flex-direction:column; align-items:flex-start; gap:12px; } .pa-scan,.pa-today { padding:22px; } .pa-filters { width:100%; } select { flex:1; } .pa-toolbar { padding:16px; } .pa-metric { padding:14px; gap:9px; } }
 @media(max-width:400px) { .pa-metric-icon { width:32px; height:32px; } .pa-metric>div>span { font-size:10px; } .pa-summary { gap:10px; } }

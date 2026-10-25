@@ -1,22 +1,22 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue';
 import { CheckCircle2, CircleAlert, X } from 'lucide-vue-next';
-import { toasts, dismissToast } from '../../stores/toasts.js';
-const viewport = ref(null);
+import { toasts, dismissToast, pauseToast, resumeToast } from '../../stores/toasts.js';
+const viewport = ref(null), visible = ref(false);
+function afterLeave() { if (!toasts.length) { visible.value = false; viewport.value?.hidePopover?.(); } }
 watch(() => toasts.length, async length => {
   await nextTick();
-  // Popovers share the browser's top layer with native modal dialogs.
-  if (length && viewport.value?.showPopover) {
-    viewport.value.hidePopover();
-    viewport.value.showPopover();
-  } else if (!length) viewport.value?.hidePopover?.();
+  if (length) {
+    visible.value = true;
+    if (viewport.value?.showPopover && !viewport.value.matches(':popover-open')) viewport.value.showPopover();
+  }
 }, { flush: 'post' });
 </script>
 <template>
   <Teleport to="body">
-    <div ref="viewport" popover="manual" class="toast-viewport" :class="{ 'has-toasts': toasts.length }" aria-label="ការជូនដំណឹង">
-      <TransitionGroup name="toast">
-        <div v-for="toast in toasts" :key="toast.id" class="factory-toast" :class="toast.type" :role="toast.type === 'error' ? 'alert' : 'status'">
+    <div ref="viewport" popover="manual" class="toast-viewport" :class="{ 'has-toasts': visible }" aria-label="ការជូនដំណឹង">
+      <TransitionGroup name="toast" @after-leave="afterLeave">
+        <div v-for="toast in toasts" :key="toast.id" class="factory-toast" :class="toast.type" @pointerenter="pauseToast(toast.id)" @pointerleave="resumeToast(toast.id)" @focusin="pauseToast(toast.id, 'focus')" @focusout="event => { if (!event.currentTarget.contains(event.relatedTarget)) resumeToast(toast.id, 'focus'); }" :role="toast.type === 'error' ? 'alert' : 'status'">
           <component :is="toast.type === 'error' ? CircleAlert : CheckCircle2" :size="22" />
           <p>{{ toast.message }}</p>
           <button type="button" aria-label="បិទការជូនដំណឹង" @click="dismissToast(toast.id)"><X :size="17" /></button>
@@ -34,9 +34,10 @@ watch(() => toasts.length, async length => {
 .factory-toast button { border: 0; background: transparent; color: inherit; padding: 3px; cursor: pointer; }
 .factory-toast.error { background: #fff6f6; border-color: #f0d5d9; border-left-color: #c74b64; color: #91374b; }
 .factory-toast.error>svg { color: #c74b64; }
-.toast-enter-active, .toast-leave-active { transition: opacity .2s, transform .2s; }
-.toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(20px); }
+.toast-enter-active, .toast-leave-active { transition: opacity 180ms ease-out, transform 180ms ease-out; }
+.toast-move { transition:transform 180ms ease-out; }
+.toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(12px); }
 @supports not selector(:popover-open) { .toast-viewport { display: none; } .toast-viewport.has-toasts { display: block; } }
 @media (max-width: 540px) { .toast-viewport { inset: 16px 16px auto auto; } }
-@media (prefers-reduced-motion: reduce) { .toast-enter-active, .toast-leave-active { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .toast-enter-active, .toast-leave-active, .toast-move { transition: none; } }
 </style>
