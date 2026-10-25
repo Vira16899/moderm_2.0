@@ -1,0 +1,1 @@
+Workspace routes require authentication and their matching role. The async guard verifies identity through /getMe, restores sessions through /refresh-token, and redirects unsupported or expired sessions to /login. Admin OTP challenges use /verify-admin-otp (with /verify-otp as a legacy alias). Only the attendance TV display is public.

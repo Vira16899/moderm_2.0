@@ -1,0 +1,357 @@
+[
+  {
+    "path": "index.html",
+    "before": "9e5ff5d734df5817c0cc96b1b7af33440ad1aaaae6f6ca429052aafea54e48d8",
+    "after": "b493f431800f4d77653218df628a8317da1a435f36a86b74eed8c62818b5a9b2"
+  },
+  {
+    "path": "src/stores/auth.js",
+    "before": "f3a6d2bd284b105d701adba19efbc4e20314c6ce62e16dcd0d984613429967ad",
+    "after": "a388c64974fe002c71563fb43e2a25187c28f17316c82cd70ae50d495f172ba4"
+  },
+  {
+    "path": "src/stores/toast.js",
+    "before": "ac13e7c350501a372f80d478870a9da883255588a410b559208780059db5e8e2",
+    "after": "682e774c1b75953e25e559d134b23e124628c3a42a2e093a9f7f1d58d5e4a1e4"
+  },
+  {
+    "path": "src/stores/useArcticleStore.js",
+    "before": "8468fd070b91b09252a0695563b003f1bdb552c146f247728c1c1fd898a3bcc8",
+    "after": "8868a7e85f8ffba225601ce0a7fb1ee5e88a69404aec41a1edcbd90c756cb0cb"
+  },
+  {
+    "path": "src/stores/useAuth.js",
+    "before": "564d5c9b7f135af94a322d3fd81f8f4e8660896206c66326d5d1c2634b41a945",
+    "after": "e22aeaaf77e078f8d8f9a1f6f546c0acd0b505223a3645d6c173b876bf5fd1df"
+  },
+  {
+    "path": "src/stores/useGroupManagerStore.js",
+    "before": "472ac0ffaf9f768fda97d5f365912656e4505db9d434cc4b148100e8e6f2fb80",
+    "after": "be362e32df2ca82b047a709e75116d583a8b53e072dc4c63f831d848c5eab981"
+  },
+  {
+    "path": "src/stores/useGroupStore.js",
+    "before": "be3daefeb8f41da1bb2c8f7eaf1425571555e1344b6ec0fa88593554acb958c3",
+    "after": "1068458f383657e977beed65d12bd55b1df7d45295f427d000c5c9d369a85af4"
+  },
+  {
+    "path": "src/stores/useNotificationStore.js",
+    "before": "c8a2e59428de7e4a87faf8faae4fee8421a65e23df95c7c1431e1d12b02772b6",
+    "after": "956d2cec7e5c89819b990b512501be5cf0b68c5d25adf312628386a94d96ee1c"
+  },
+  {
+    "path": "src/stores/useReportManagerStore.js",
+    "before": "491d70cf6094feb9ffebe158bda1db3ab820b0f6c76ff83413fbf5f5c920f9c1",
+    "after": "a99e685dbe0d0844c48ffd1d16a383abeb546fe71f507fe8bfe093c0be2feb26"
+  },
+  {
+    "path": "src/stores/useReportStore.js",
+    "before": "09a7684aef908f0b0039910ce956e3e497ee4388886f1dc84cc4063ee242bdc2",
+    "after": "ae1d7792a99c511986d3bbdeb8f4c154eeb718cab952bffb39bab3bd221f881d"
+  },
+  {
+    "path": "src/stores/userStore.js",
+    "before": "f677426e32ea1421e1c9e6fee69914a8429517238928d391b864ccb7062b6415",
+    "after": "af87d30d8b9b9f88dd5b18156c729ec48d3c65f317d633403c61fc3a20c012f3"
+  },
+  {
+    "path": "src/stores/useToast.js",
+    "before": "feeb0b378292a4c60087ea6f84645866f93d5e16300f541bcd671d6fd8921d82",
+    "after": "ce85f7f392c8b10b25b327bb70b36e508f296a8c670c513795b308235c55cca3"
+  },
+  {
+    "path": "src/utils/displayText.js",
+    "before": null,
+    "after": "2b91f090e2d9055af2956baf280bc2adafba73fa80a4e4f2fe701f9d8609ae3e"
+  },
+  {
+    "path": "src/utils/roles.js",
+    "before": "afe7d5f9b3d9cdb2356b1d008abc57fba4ed01b290a2bff29550293e7f1ed2b1",
+    "after": "eb46afcf1ff0aa1f8ac232821a7bba9db18ba5532b4c84e5e3ae823fd3858a1e"
+  },
+  {
+    "path": "src/views/DashboardView.vue",
+    "before": "d7fd8a6d0cb95dfada2a5c9376c4cd3a08b109b93a0ab4e3126bd2e22dfee9c5",
+    "after": "83678ea43ab9c75c3c33fb4d854b6dd550e3a39612579aebdd1d0a0a88ab5662"
+  },
+  {
+    "path": "src/views/NotificationsView.vue",
+    "before": "1f34c42fc768c38aad7f3618ebfa9e66a2d735d7a42a7e5b095272681b0e8a08",
+    "after": "83260b22533f1a693b62c355f6dcf24c2df588a5b0c7a408238fdf5b57bf98fb"
+  },
+  {
+    "path": "src/views/TelegramView.vue",
+    "before": "771140a4f9cbc3f8bbbf999d8637bbbc8fae414d856a52d860f750d00dcc3566",
+    "after": "36032f8c37281ee50dd13b28e02ca41ecbfc32982f49618fb687d0b4e95f577d"
+  },
+  {
+    "path": "src/components/comment/Navbar.vue",
+    "before": "a9e7a4db7014e082f73ea8532542bd5497cdffb8ca22500f556805e8075396df",
+    "after": "30fe8ed8b780d8f3c731190aa672789630433f40a04c4f59af2aabf81074e73a"
+  },
+  {
+    "path": "src/components/comment/Sidebar.vue",
+    "before": "f736a5971768b87459a9a5bfc3b2743460c8a7d224535ed72620247d18e1ce13",
+    "after": "d3118cdef3711776e148a6630c83fa4c0575a8af4927a2471f245f8567100cbd"
+  },
+  {
+    "path": "src/components/common/PaginationGroup.vue",
+    "before": "147cbf67604ff3a66d0ff91f6619b477254bba7d31a583a7509fe4e629b929b5",
+    "after": "9f24c1f8e5e3fb7463f8571eeac82ebf270f5dcba47b8108d4514297f74ba298"
+  },
+  {
+    "path": "src/components/common/StatusBadge.vue",
+    "before": "bbbd425cbb6acbb231e628ea8dc5d8fecffeb431c057a3e856710d875b73aae2",
+    "after": "a7d46df5d1766b7f035d4b560396c75dab63177c0d35bf2efffba02abbcfc31f"
+  },
+  {
+    "path": "src/components/layout/Navbar.vue",
+    "before": "1c4139ea3d413996ad6f378c3ee768017263cf00d7182576cc56748a9a6b4982",
+    "after": "10645e3bd517b8fe777ffe5b25c8902b020428f1227dac46fa42d157f5e31e88"
+  },
+  {
+    "path": "src/components/layout/Sidebar.vue",
+    "before": "d436a2bbc5c180ec8fd2972a8eb30734560cbadcc9dbd4a9cb941e1f2506d3b0",
+    "after": "9712b1f52a7a567c93cf52cf46751b8b40c42b893316f949e031b43e41c2b069"
+  },
+  {
+    "path": "src/components/ui/base/BaseButton.vue",
+    "before": "7079d01c06917e3f7b4207feb3814c3672d86c11954725b1f8b667a08ee3ce0a",
+    "after": "72a684fa55c4ee0cc3f4db6a1fed2f9a33c2f0d5426ab4c0d173a1d14a1e3f55"
+  },
+  {
+    "path": "src/components/ui/base/BaseHistorySalaryView.vue",
+    "before": "4dd7f786802690dc4d0d51d3b23cf6c3e15568c32d1306a88ae7da9e359783d3",
+    "after": "458e06d0bb60918fa58d310312087f72fbfb9ddb3fc377728772c979457e41ca"
+  },
+  {
+    "path": "src/components/ui/base/BasePagination.vue",
+    "before": "f1ac90010d166283d272c190b924e40c89c5dd6910e4c42005cae2325239ce1f",
+    "after": "55b077e545e299a6a00f9c9cf84c88998fe19d0d52f8be2c75d51d6608a84c74"
+  },
+  {
+    "path": "src/components/ui/base/BaseSalaryViewByIdView.vue",
+    "before": "5c8ee34002a9e53489ca83d8b52878344915a1b83873b9718b5fed9120724e8c",
+    "after": "99f6d07eee2d3650fdfa67163bbf5770e550d868bd1dcdc087fb47ba19254f9d"
+  },
+  {
+    "path": "src/components/ui/base/BaseSearchBar.vue",
+    "before": "c70e90f5ff479a394d4f50a22032559dcb8c09c8a2205d48b4a9b2b948e4c4ac",
+    "after": "838dc02098b9ec507e73adb75589e54633353c796513b8b2cd6fe6d5affbdabd"
+  },
+  {
+    "path": "src/components/ui/base/BaseTable.vue",
+    "before": "efdc33d19a1af8aff8b903004c76487adff595d3119c936e50d4710d01bd679f",
+    "after": "36084c3c5994e0b4d392a7a00769c2b040305350e164d729be37669fc89e029e"
+  },
+  {
+    "path": "src/components/ui/base/ChangeEmailModal.vue",
+    "before": "b1ae27c9203c4c3e036f3d87570adfa4f50278ffeeecf9ee3efd0090ec0594c6",
+    "after": "f6879efe24bbf53aa30640f6e96bf02b091837113694473380071dbb4952eb61"
+  },
+  {
+    "path": "src/components/ui/base/ChangePasswordModal.vue",
+    "before": "ebe535025fb4a0d0998a430bb03e88d220df96156a40bc330297b51ee6a26b75",
+    "after": "45ee17a53c1fe7fe51a74da306488053b9914ecb1c5ea6d1e54af59b329a00e5"
+  },
+  {
+    "path": "src/components/ui/base/DeleteAccountModal.vue",
+    "before": "37ff692640fd211b7e7adb09a21e3c2be1eab717340cda5d411b082d16b482e6",
+    "after": "8a037a7d1e22337d7ac1743c7366dcd51230c9f405e8a4756a949e6197f7adc4"
+  },
+  {
+    "path": "src/components/ui/base/EmailSentModal.vue",
+    "before": "946b0a006b035da36e765f28a826119e2258e6427c38420f771d0cc3c7f6dfc5",
+    "after": "3bfe4e40989b5b753302d82076630437212a6b42a689da04fc4869a055dec0ce"
+  },
+  {
+    "path": "src/components/ui/base/GroupCard.vue",
+    "before": "d36dda1dd5c114bf815979bb876a8f6e7c7bd8b6fbae4feb7f77f78e096a3c35",
+    "after": "54cbe996c48c897186507b2202ab1cb3384c2b90a5fa216b6fe69df53907a3b7"
+  },
+  {
+    "path": "src/components/ui/base/GroupFormModal.vue",
+    "before": "81b9a142892ba3526c21925059d2de9eb67fa8dab4a0331fd3a7a475da1b1781",
+    "after": "763b89636b321dba230d2b7566c8a811810618d46654d4441f8fa0719f55d83e"
+  },
+  {
+    "path": "src/components/ui/base/GroupMembersModal.vue",
+    "before": "ff4a79804957781d47aaa6aa30a6e5169c4373f2e3d15878f44de3d4428c2d0d",
+    "after": "734f563ef507af80ce53b3a854a8e03d8245f21c8f1a29bc683f0203017f4162"
+  },
+  {
+    "path": "src/components/ui/base/MyReportDetailsModal.vue",
+    "before": "e82022f11f7ce87ef252f4c4d043a7a804d3a6e8b8fe0a8505b81789fe7099f3",
+    "after": "e7e5273d5155e1842263d5819e4d27e50de2f6c90976caee351b3810079c215e"
+  },
+  {
+    "path": "src/components/ui/base/ProfileEditModal.vue",
+    "before": "46738658130d56ea0047b25c7250ac2663047f8a2894def749b805e8ea032063",
+    "after": "790af22ed9a60dcdc8f13132c6f1f22725c33203b3c172a353497ba3523ee0af"
+  },
+  {
+    "path": "src/components/ui/base/ReportDetailsModal.vue",
+    "before": "eaf4c9fb3a143dcb6ef09d322a0821e42c25ba399ede8a4a84c5ce5909e1e397",
+    "after": "5ae758a35f902192ff935c988219a911bceacb24ce55a89c61c7c2be8f781378"
+  },
+  {
+    "path": "src/components/ui/base/ReportFormModal.vue",
+    "before": "fa8e73ebcb70bd7a23d57d8618e271c726bf7979b16464f182547383f6772f47",
+    "after": "d8f5ec2f51948c084645012ba1e4cefd1de07c5fc404df385027a4da902fc954"
+  },
+  {
+    "path": "src/components/ui/base/SalaryFormModal.vue",
+    "before": "b83e06fb4c8d7a258c363d3836b7dee40fec89da3da4156738382ca938f35d42",
+    "after": "f0af3cab183a03fb4ac165754fb5e1525ea38d0f75e87b9d0b99d75ead6347a7"
+  },
+  {
+    "path": "src/components/ui/base/SalaryHistoryModal.vue",
+    "before": "8ca525f6f9080faf734ddc76f70a257a6ec937730b2545637794c4b555886d46",
+    "after": "b0e3eb5a005d8d3815ffda2363f52854eb0f21b85bf5b3f184480a4ac4b0d387"
+  },
+  {
+    "path": "src/components/ui/base/StaffDetailsModal.vue",
+    "before": "7ffa4dbb70a7278ceee035e8b69808f31221317221b8e0feb531338da68956fe",
+    "after": "15eaf0789c05479e54724aacb58780572320d313f0ddc2380ab8bb5d34770f00"
+  },
+  {
+    "path": "src/components/ui/base/TelegramConnectModal.vue",
+    "before": "0f0ac257e67c92fcd5faaa78484deec2c7891f8dca38cc15cabc2404fef0efba",
+    "after": "a4d487d0b0c5104ddc10a2e83ec2c21a75656790961bdd8bc79bc68640a72a85"
+  },
+  {
+    "path": "src/components/ui/base/ThumbnailUploadModal.vue",
+    "before": "8b172488f58fb308e1f649d68792b41cf3bdb3a473fcd1e33dc50107a3d4e6f7",
+    "after": "05eb43e79660a88135de08500ca5a0f817b675a13f3d38d6ea4320d7cb1bc4a7"
+  },
+  {
+    "path": "src/components/ui/base/ToastContainer.vue",
+    "before": "04a33cda0afab1644b4fdb03a8f7f9893b42753c9f3f22bbe5cf7c6cae2dd31f",
+    "after": "9237a532b5e9d285809c6a7d671956f9e4230568eb232efcc8cb5be7645199ca"
+  },
+  {
+    "path": "src/components/ui/base/Notification/BaseNotificationView.vue",
+    "before": "99a1b37aa5b48f8ee9ecb48526029f98c262583d485756b381b836977ee65277",
+    "after": "549f256cb18d706ac3c64ff8649fcacc5fdefb531c9ad4ff7788c1cf5931ea05"
+  },
+  {
+    "path": "src/views/admin/GetUserByIDView.vue",
+    "before": "c03d3e85a751cff0efca67f5c0eebca7e79ecd5d4502b0a658c2339dfc5c4289",
+    "after": "44e9dfdc010b7548cf41ae42629310738e3466518ab0e364115e7b260c465463"
+  },
+  {
+    "path": "src/views/admin/GroupDetailView.vue",
+    "before": "51b9a93a954052b558976f791aa31f1c4b70c1fc250943c90e7f02ce20d7419a",
+    "after": "463a134f624dda5e60435a45477f9b4c1bab78a65f1cb4a5eade060e192170f4"
+  },
+  {
+    "path": "src/views/admin/GroupsView.vue",
+    "before": "227b96d5adb62be9cf316f54587b1f2c4649c755e98af81926f2aec57d823203",
+    "after": "ea33b860034277629b04b41b5a589cfa83350810ea2e12be26a1e09f39db7603"
+  },
+  {
+    "path": "src/views/admin/NotificationsView.vue",
+    "before": "24d0312493b27a2fbfbad1ef7a289a3af25778fc35ddd10c38df090d5c9d9150",
+    "after": "e11e0ee22ad3be6f302b3113a24b20d331e12df9951a6bfec7f9c90fc67fba27"
+  },
+  {
+    "path": "src/views/admin/ReportsView.vue",
+    "before": "5aaa5399bec44b2cf116f9abb0f14307067087e4dc044c411658bda065c0ac87",
+    "after": "6a72445ac6f4c7ee7e7ee9381049a4bde0b18e89700db4efcb59b10858dab62d"
+  },
+  {
+    "path": "src/views/admin/SalaryHistoryByIdView.vue",
+    "before": "1234869aa4787c20717f3f4c7d70bde5976362536c58a0ba91d5cfdb19f16bef",
+    "after": "55782684c4414d25a82a8120b60348bccee581967241d2f9fe684e254291af7e"
+  },
+  {
+    "path": "src/views/admin/SalaryManagementView.vue",
+    "before": "c97ffdcb3a177eca08ae73244e72fd0f88fd391ad09393f8995f91d4f8dd3876",
+    "after": "c4b7b7e9e655947c0a797e35048fe513ad0d788aec2ff97b624683001fde440c"
+  },
+  {
+    "path": "src/views/admin/StaffManagementView.vue",
+    "before": "e53e02433056126aa0d16a0a48876330c847a3d29fbcae3496156cf629ef5a2f",
+    "after": "688bb8d6f23d677e2c00797fb90acb3c5a4127b2bbf7749ba6a35d6b9e398fcd"
+  },
+  {
+    "path": "src/views/admin/UsersView.vue",
+    "before": "5af8131cbef1df9f7f46d54cdd508498debad2ccad1ba500e7f7dc7cf14db7ee",
+    "after": "13c2d4532fd8190d7d3fdd15a7a87ef0c38ae38c5c2f157590b0d8d2188aa80b"
+  },
+  {
+    "path": "src/views/auth/ChangePasswordView.vue",
+    "before": "fd05951ee5a04ff299646f2d7af165f0b360fca23c9381a06e87aa13cb1b9fef",
+    "after": "16fe204564b46fd0ecb6f232fe249e5bfeeba9e002c5becf983e822e620c54f1"
+  },
+  {
+    "path": "src/views/auth/ForgotPasswordView.vue",
+    "before": "0371a89872634d074ae08d8bb91c30c3edbee422601545d640205e1ffd6ce07b",
+    "after": "1b44f19cb253d61c94498c3786af462889c29ad09f887feb1dcdd817bbf89a91"
+  },
+  {
+    "path": "src/views/auth/LoginView.vue",
+    "before": "9be709e6776f19b4dd64aeac38aa0501573a50a59a05711b0c62eff45ed482e1",
+    "after": "cd64fec9b99102398d6395ba8bacb7715738de42bf2980171ad9df015867b7db"
+  },
+  {
+    "path": "src/views/auth/ResetPasswordView.vue",
+    "before": "cdcb9fd390031663585bee3773b5085b6ce4ae97fe04f3c272e403a5fab2335d",
+    "after": "1ba41bac24bd72e7e8b06afe7beec8e707024fd5da49e34112fdbb9102e1936e"
+  },
+  {
+    "path": "src/views/auth/VerifyEmailChangeView.vue",
+    "before": "dc3dc0241c6b5c8a298fe0e9d69967c7775a68391cb1c62510b1545688a338e0",
+    "after": "12e171f8713328d9b4aa33933d5caa23f69df13fb5c1d036ad388986c48bf3eb"
+  },
+  {
+    "path": "src/views/manager/ManagerDashboardView.vue",
+    "before": "29a0c3ba2d51a979eb43f23c38e625a027178e08a5e336b48bd4caaf36e9704d",
+    "after": "78415016b4bd8b56a2cfa04288f939f499fcc5b36cc5e227eb6fd0ead24b79bd"
+  },
+  {
+    "path": "src/views/manager/ManagerNotificationView.vue",
+    "before": "7ba1d8fea732fc69be7a0476ef6eaeed6dc5a2a8d151666d4ef5ec226d37e8ff",
+    "after": "d5b6ddbf370f04dbc414c8a861e45e73965d9395f09941da76075b8baccdd106"
+  },
+  {
+    "path": "src/views/manager/MyGroupsView.vue",
+    "before": "8d0b18c9233ae79bee1faf42de941dd3a6f9865768916732832e6ed3729daf2c",
+    "after": "ee0b0bb40fc5ffc081c9df124aaac2bc730faffa285e2a711711e68e5d69f1f9"
+  },
+  {
+    "path": "src/views/manager/MyReportsView.vue",
+    "before": "364672e40c37df36fd5a80810c9438007ba64798fd043f1ecec8356f52761943",
+    "after": "3accada744664544b7c7d90116f640057e49de6c7197effd0b3ccb65bba2991e"
+  },
+  {
+    "path": "src/views/manager/MyStaffsView.vue",
+    "before": "d878ddacf44c7ec5e533160f9fd7564a0379db02d54aecfc082be5de8244ff70",
+    "after": "28f8c68212cd246e7cd61a3122a93c3f5f7f98a0e89d2534872a5eefae8e9fae"
+  },
+  {
+    "path": "src/views/manager/MyStaffView.vue",
+    "before": "877e6e7e228506cd0659a78135945b02b0d6e4696acdde00bc0de6c34a752a21",
+    "after": "35c6dcdbda6725bffa7e8bd66c4f08b8b4fab2d6ad1eb7db043bcad7ca66ac9c"
+  },
+  {
+    "path": "src/views/profile/ProfileView.vue",
+    "before": "bbb7fdc4b6f80d0a032abad7350d5bd74483db983a034b31d60af81a37988aa8",
+    "after": "6ad5e9655247f70a8498ec85d50f9bcd24132590517bfec82106a55e9e91055b"
+  },
+  {
+    "path": "src/views/profile/UserViewDetail.vue",
+    "before": "f3be0b0dd005f811ac21ff357eeadd4bf3972a097bf03143acfa21f886f63693",
+    "after": "125c5d742bc30d378c02cfd511edd73e72a648ad169b37a8b10bface26cea726"
+  },
+  {
+    "path": "src/views/shared/NotFoundView.vue",
+    "before": "501af3f55620c99a468688db2ff94e68de0fa2758f5c55821ace102ba154f13d",
+    "after": "b990cb543872c62c011423f4221e7839441bd592b0457541c4684795d2a93144"
+  },
+  {
+    "path": "src/views/staff/SalaryHistoryView.vue",
+    "before": "b0731e62467606c082156b1824c3daf0602c7ee1578da2d9e5da84f3f54de589",
+    "after": "ba1966dd36659dc6ff21836dca73200786e815978cde93701b560a59ec72e3d3"
+  }
+]

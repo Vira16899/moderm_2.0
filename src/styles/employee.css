@@ -1,0 +1,80 @@
+.ess-page { display: grid; gap: 24px; color: var(--ink, #11243a); }
+.ess-header, .ess-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.ess-page h1 { font-size: 26px; font-weight: 750; margin-bottom: 8px; }
+.ess-page h2, .ess-dialog h2 { font-size: 18px; font-weight: 700; }
+.ess-muted { color: var(--muted, #64748b); font-size: 13px; }
+.ess-panel, .ess-metric { padding: 24px; border: 1px solid var(--line, #d5f2f7); border-radius: 20px; background: var(--surface, #fff); }
+.ess-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; }
+.ess-metric strong { display: block; font-size: 28px; margin: 12px 0; color: #0891a2; }
+.ess-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 16px; font-size: 13px; cursor: pointer; }
+.ess-primary { background: #087f8c; color: white; border-color: #087f8c; }
+.ess-danger { color: #be123c; border-color: #fda4af; }
+.ess-button:disabled { opacity: .5; cursor: wait; }
+.ess-button:focus-visible, .ess-form input:focus-visible, .ess-form select:focus-visible, .ess-form textarea:focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; }
+.ess-table-wrap { overflow-x: auto; }
+.ess-table { width: 100%; text-align: left; font-size: 13px; border-collapse: collapse; }
+.ess-table th, .ess-table td { padding: 16px 12px; border-bottom: 1px solid var(--line, #e2e8f0); vertical-align: top; }
+.ess-table th { color: var(--muted, #64748b); font-weight: 600; white-space: nowrap; }
+.ess-status { display: inline-block; padding: 4px 10px; border-radius: 20px; background: #f1f5f9; color: #475569; white-space: nowrap; }
+.ess-status.pending { background: #fef3c7; color: #92400e; }
+.ess-status.approved { background: #d1fae5; color: #065f46; }
+.ess-status.cancelled, .ess-status.rejected { background: #ffe4e6; color: #9f1239; }
+.ess-error { background: #fff1f2; color: #9f1239; padding: 14px; border-radius: 12px; }
+.ess-success { background: #ecfdf5; color: #065f46; padding: 14px; border-radius: 12px; }
+.ess-empty { padding: 32px 12px; text-align: center; color: var(--muted, #64748b); }
+.ess-dialog { display: grid; gap: 18px; }
+.ess-form { display: grid; gap: 16px; }
+.ess-form label { display: grid; gap: 8px; font-size: 13px; }
+.ess-form input, .ess-form select, .ess-form textarea, .ess-filter { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #94a3b8; background: transparent; color: inherit; }
+.ess-form textarea { min-height: 100px; resize: vertical; }
+.ess-form fieldset { display: grid; gap: 16px; min-width: 0; }
+.ess-link { color: #087f8c; text-decoration: underline; }
+.ess-reason { max-width: 260px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Employee surfaces reuse the same dashboard cards and account dialogs as other roles. */
+.employee-dashboard .page-heading h1 { font-size: 28px; font-weight: 750; letter-spacing: -.5px; }
+.employee-dashboard .date-badge { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; }
+.employee-dashboard-columns { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(280px, 1fr); gap: 24px; align-items: start; }
+.employee-recent-panel { min-width: 0; }
+.employee-dashboard .panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.employee-dashboard .panel-heading p { color: var(--muted); font-size: 12px; margin-top: 6px; }
+.employee-dashboard .ess-link { font-size: 12px; white-space: nowrap; text-decoration: none; }
+.employee-shortcut { display: flex; align-items: center; gap: 12px; padding: 16px 0; border-top: 1px solid var(--line); }
+.employee-shortcut>span:nth-child(2) { flex: 1; min-width: 0; }
+.employee-shortcut strong, .employee-shortcut small { display: block; }
+.employee-shortcut strong { font-size: 13px; color: var(--ink); }
+.employee-shortcut small { margin-top: 5px; font-size: 11px; color: var(--muted); }
+.employee-shortcut>svg { color: var(--muted); flex-shrink: 0; }
+.employee-shortcut:hover strong, .employee-shortcut:hover>svg { color: var(--blue); }
+.employee-shortcut-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 14px; flex-shrink: 0; }
+.employee-shortcut-icon.amber { color: #aa7416; background: #faf0dd; }
+.employee-shortcut-icon.blue { color: #087f8c; background: #e2f3f5; }
+.employee-shortcut-icon.green { color: #16846b; background: #e3f2eb; }
+.employee-action-modal { max-width: 620px !important; padding: 26px !important; color: var(--ink); }
+.employee-action-modal .account-dialog-heading { margin-bottom: 0; align-items: flex-start; }
+.employee-action-modal .account-dialog-heading .profile-section-icon { flex-shrink: 0; }
+.employee-action-modal .account-dialog-heading h2 { line-height: 1.7; }
+.employee-action-modal .ess-form fieldset { border: 0; margin: 0; padding: 0; gap: 18px; }
+.employee-action-modal .ess-form label { color: var(--ink); font-weight: 500; }
+.employee-action-modal .ess-form :is(input, select, textarea) { border-color: var(--line); background: var(--surface); color: var(--ink); border-radius: 12px; padding: 12px 14px; font-weight: 400; }
+.employee-action-modal .ess-form input::placeholder { color: var(--muted); }
+.employee-action-modal .ess-form textarea { min-height: 112px; }
+.employee-action-modal .ess-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.employee-action-modal .profile-form-actions { margin-top: 4px; padding-top: 20px; border-top: 1px solid var(--line); }
+.employee-days { display: flex; align-items: center; gap: 8px; background: var(--soft); color: var(--blue); border: 1px solid var(--line); padding: 10px 12px; border-radius: 12px; font-size: 12px; }
+.employee-cancel-modal { max-width: 480px !important; }
+.employee-cancel-summary { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.employee-cancel-summary strong { font-size: 14px; }
+.employee-cancel-summary p { margin-top: 8px; color: var(--muted); font-size: 13px; }
+.employee-action-modal .employee-warning-icon { background: #fff1f2; color: #be123c; }
+.dark .employee-action-modal .ess-form :is(input, select, textarea) { color-scheme: dark; }
+.dark .employee-shortcut-icon.amber { background: #39351d; color: #ffd33d; }
+.dark .employee-shortcut-icon.blue { background: #163e50; color: #35ccdf; }
+.dark .employee-shortcut-icon.green { background: #17483e; color: #00e5a0; }
+.employee-spinning { animation: employee-spin 1s linear infinite; }
+@keyframes employee-spin { to { transform: rotate(360deg); } }
+@media (max-width: 1100px) { .employee-dashboard-columns { grid-template-columns: 1fr; } }
+@media (max-width: 540px) { .employee-action-modal { padding: 20px !important; } .employee-action-modal .ess-grid { grid-template-columns: 1fr; } .employee-dashboard .page-heading h1 { font-size: 24px; } }
+@media (prefers-reduced-motion: reduce) { .employee-spinning { animation: none; } }
+
+.dark .ess-status.cancelled { background: #422630; color: #f5a5b5; }

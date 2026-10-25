@@ -1,0 +1,8 @@
+{
+  "name": "Remix រោងចក្រទំនើប - Modern Factory",
+  "description": "ប្រព័ន្ធគ្រប់គ្រងរោងចក្រកាត់ដេរទំនើប - Modern Garment Factory Management \u0026 ESG Platform with Admin, ESG, Production, Finance, and Staff portals in Khmer and English.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
