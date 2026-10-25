@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
+import { isProtectedAdminId } from '../../api/adminUsers.js';
 import { ArrowLeft, UserRound, BriefcaseBusiness, History, Mail, Phone, Banknote } from 'lucide-vue-next';
 import { labels } from '../../data/labels';
 import { salaryHistory, money, dateOnly } from '../../api/employeeData';
@@ -73,7 +74,7 @@ onMounted(() => {
       <section class="dashboard-panel detail-identity" aria-labelledby="user-details-name">
         <UserAvatar :src="detailUser.avatar" :name="detailUser.nameEn || detailUser.nameKh" :size="64"/>
         <div class="detail-identity-copy"><h2 id="user-details-name">{{ detailUser.nameKh || detailUser.nameEn }}</h2><p v-if="detailUser.nameEn">{{ detailUser.nameEn }}</p><div class="detail-contact"><span v-if="detailUser.email"><Mail :size="14"/>{{ detailUser.email }}</span><span v-if="detailUser.phone"><Phone :size="14"/>{{ detailUser.phone }}</span></div></div>
-        <div class="detail-identity-badges"><BaseButton v-if="onEditSalary" variant="outline" size="sm" @click="onEditSalary(detailUser)"><Banknote :size="17"/>កែប្រែប្រាក់បៀវត្ស</BaseButton><span class="status-pill">{{ labels[detailUser.role] || detailUser.role }}</span><span class="status-pill" :class="detailUser.status === 'active' ? 'approved' : 'rejected'">{{ labels[detailUser.status] || detailUser.status }}</span></div>
+        <div class="detail-identity-badges"><BaseButton v-if="onEditSalary" variant="outline" size="sm" :disabled="isProtectedAdminId(detailUser.id)" @click="!isProtectedAdminId(detailUser.id) && onEditSalary(detailUser)"><Banknote :size="17"/>កែប្រែប្រាក់បៀវត្ស</BaseButton><span class="status-pill">{{ labels[detailUser.role] || detailUser.role }}</span><span class="status-pill" :class="detailUser.status === 'active' ? 'approved' : 'rejected'">{{ labels[detailUser.status] || detailUser.status }}</span></div>
       </section>
       <div class="user-detail-columns">
         <section class="dashboard-panel detail-section" aria-labelledby="user-personal-title"><h2 id="user-personal-title"><UserRound :size="18"/>ព័ត៌មានផ្ទាល់ខ្លួន</h2><dl class="user-detail-fields"><div v-for="field in personal" :key="field.label" :class="{ 'detail-field-wide': field.wide }"><dt>{{ field.label }}</dt><dd>{{ field.value || '—' }}</dd></div></dl></section>

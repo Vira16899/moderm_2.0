@@ -1,94 +1,113 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { Users, UserCheck, UserX, CalendarDays, ChevronLeft, ChevronRight, Gift, Clock3 } from 'lucide-vue-next';
+import { Users, UserCheck, UserX, TrendingUp, ChartColumnIncreasing, ArrowUpRight, Check } from 'lucide-vue-next';
 import DashboardMetric from '../../components/common/DashboardMetric.vue';
+import BaseSkeleton from '../../components/base/BaseSkeleton.vue';
+import UserAvatar from '../../components/common/UserAvatar.vue';
 import { localToday } from '../../api/employeeData.js';
-import { calendarDays, shiftMonth, eventsOnDay } from '../../api/managerCalendar.js';
+import { managerInsights } from '../../api/managerInsights.js';
 const props = defineProps({ currentUser: Object, dashboard: Object, employees: { type: Array, default: () => [] }, loading: Boolean, error: String, onRetry: Function, onNavigateEmployees: Function, onNavigateLeaves: Function });
-const today = localToday();
-const month = ref(today.slice(0, 7));
-const selected = ref(today);
-const dateLabel = day => new Intl.DateTimeFormat('km-KH', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${day}T00:00:00Z`));
-const monthLabel = computed(() => new Intl.DateTimeFormat('km-KH', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${month.value}-01T00:00:00Z`)));
+const today = localToday(), monthCount = ref(6), selectedMonth = ref(''), selectedStatus = ref('');
 const unavailable = computed(() => props.loading || Boolean(props.error));
-const events = day => unavailable.value ? [] : eventsOnDay(day, props.employees, props.dashboard?.leaveRequests ?? []);
-const days = computed(() => calendarDays(month.value).map(day => ({ day, events: events(day), current: day.startsWith(month.value) })));
-const agenda = computed(() => events(selected.value));
-const pending = computed(() => unavailable.value ? null : props.dashboard?.pendingLeaves);
+const insights = computed(() => managerInsights(props.employees, today, monthCount.value));
+const maxHires = computed(() => Math.max(1, ...insights.value.months.map(month => month.count)));
+const selected = computed(() => insights.value.months.find(month => month.key === selectedMonth.value));
+const monthsKh = ['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'];
+const monthLabel = key => `${monthsKh[Number(key.slice(5)) - 1]} ${key.slice(0, 4)}`;
+const number = value => new Intl.NumberFormat('km-KH').format(value);
+const statuses = computed(() => [
+  { key: 'active', label: 'គណនីសកម្ម', color: '#1ca5a3', count: insights.value.status.active },
+  { key: 'inactive', label: 'គណនីអសកម្ម', color: '#e9b746', count: insights.value.status.inactive },
+  { key: 'unknown', label: 'មិនបានបញ្ជាក់', color: 'var(--muted)', count: insights.value.status.unknown },
+].filter(item => item.key !== 'unknown' || item.count));
+const ring = computed(() => {
+  const total = insights.value.team.length;
+  if (!total || unavailable.value) return 'var(--line)';
+  let start = 0;
+  return `conic-gradient(${statuses.value.map(item => { const end = start + item.count / total * 100; const part = `${item.color} ${start}% ${end}%`; start = end; return part; }).join(',')})`;
+});
+const members = computed(() => (selected.value?.members ?? insights.value.team).filter(employee => {
+  const status = String(employee.status ?? '').toLowerCase();
+  const key = ['active', 'inactive'].includes(status) ? status : 'unknown';
+  return !selectedStatus.value || key === selectedStatus.value;
+}));
 const metrics = computed(() => [
-  { title: 'បុគ្គលិកសរុប', value: props.dashboard?.total, icon: Users, color: 'blue' },
-  { title: 'មកធ្វើការ', value: props.dashboard?.present, icon: UserCheck, color: 'green' },
-  { title: 'អវត្តមាន', value: props.dashboard?.absent, icon: UserX, color: 'amber' },
-  { title: 'ច្បាប់រង់ចាំ', value: props.dashboard?.pending, icon: Clock3, color: 'violet' },
+  { title: 'បុគ្គលិកក្នុងផ្នែក', value: insights.value.team.length, icon: Users, color: 'blue', note: 'ចំនួនបុគ្គលិកបច្ចុប្បន្ន ដោយមិនរាប់ស្ទួន' },
+  { title: 'គណនីសកម្ម', value: insights.value.status.active, icon: UserCheck, color: 'green', note: 'បុគ្គលិកដែលមានគណនីសកម្មក្នុងផ្នែក' },
+  { title: 'គណនីអសកម្ម', value: insights.value.status.inactive, icon: UserX, color: 'amber', note: 'បុគ្គលិកដែលមានគណនីអសកម្មក្នុងផ្នែក' },
+  { title: 'បុគ្គលិកចូលថ្មី', value: selected.value?.count ?? insights.value.hires, icon: TrendingUp, color: 'violet', note: selected.value ? monthLabel(selected.value.key) : `${number(monthCount.value)} ខែចុងក្រោយ · ផ្លាស់ប្ដូរតាមរយៈពេលក្រាហ្វ` },
 ]);
-function moveMonth(offset) { month.value = shiftMonth(month.value, offset); selected.value = `${month.value}-01`; }
-function goToday() { month.value = today.slice(0, 7); selected.value = today; }
+function changePeriod() { selectedMonth.value = ''; }
+function toggleMonth(key) { selectedMonth.value = selectedMonth.value === key ? '' : key; }
 </script>
 
 <template>
   <div class="dashboard role-dashboard manager-overview">
-    <header class="page-heading"><div><h1>ផ្ទាំងគ្រប់គ្រងផ្នែក</h1><p>សូមស្វាគមន៍ {{ currentUser?.nameKh }} · តាមដានបុគ្គលិក និងរៀបចំការងារប្រចាំថ្ងៃ</p></div></header>
-    <p v-if="error" role="alert" class="form-error">{{ error }}</p>
-    <p v-if="loading" role="status" class="md-muted">កំពុងទាញយកព័ត៌មានផ្នែក…</p>
-    <div class="metrics-grid"><DashboardMetric v-for="metric in metrics" :key="metric.title" :title="metric.title" :value="unavailable ? '—' : metric.value ?? '—'" :icon="metric.icon" :color="metric.color" :note="unavailable || metric.value == null ? 'មិនមានទិន្នន័យ' : 'ក្នុងផ្នែករបស់អ្នក'" /></div>
-    <div class="md-columns">
-      <section class="dashboard-panel md-calendar" :aria-busy="loading" aria-labelledby="manager-calendar-title">
-        <div class="md-heading"><div><h2 id="manager-calendar-title"><CalendarDays :size="20" /> ប្រតិទិនក្រុមការងារ</h2><p class="md-muted">ខួបកំណើត ថ្ងៃចូលធ្វើការ និងសំណើសុំច្បាប់ដែលបានទទួល</p></div><button class="md-button" @click="goToday">ថ្ងៃនេះ</button></div>
-        <div class="md-month"><button class="md-icon" aria-label="ខែមុន" @click="moveMonth(-1)"><ChevronLeft :size="20" /></button><h3 aria-live="polite">{{ monthLabel }}</h3><button class="md-icon" aria-label="ខែបន្ទាប់" @click="moveMonth(1)"><ChevronRight :size="20" /></button></div>
-        <div class="md-week" aria-hidden="true"><span v-for="day in ['ចន្ទ','អង្គារ','ពុធ','ព្រហស្បតិ៍','សុក្រ','សៅរ៍','អាទិត្យ']" :key="day">{{ day }}</span></div>
-        <div class="md-grid" role="group" aria-label="ជ្រើសរើសថ្ងៃ"><button v-for="cell in days" :key="cell.day" :aria-label="`${dateLabel(cell.day)} · ${cell.events.length} ព្រឹត្តិការណ៍`" :aria-pressed="selected === cell.day" :aria-current="cell.day === today ? 'date' : undefined" :class="{ outside: !cell.current, today: cell.day === today, selected: cell.day === selected }" @click="selected = cell.day"><span>{{ new Intl.NumberFormat('km-KH').format(Number(cell.day.slice(8))) }}</span><span class="md-dots" aria-hidden="true"><i v-for="kind in [...new Set(cell.events.map(event => event.kind))]" :key="kind" :class="kind"></i></span></button></div>
-        <div class="md-legend"><span><i class="birthday"></i>ខួបកំណើត</span><span><i class="hire"></i>ចូលធ្វើការ</span><span><i class="approved"></i>បានអនុម័ត</span><span><i class="pending"></i>រង់ចាំ</span></div>
-        <p v-if="!loading && !error && dashboard?.leaveRequests == null" class="md-muted md-source">ទិន្នន័យសុំច្បាប់របស់ក្រុមមិនទាន់មានពីប្រព័ន្ធ។ ប្រតិទិនបង្ហាញព័ត៌មានបុគ្គលិកដែលមាន។</p>
-      </section>
-      <div class="md-aside">
-        <section class="dashboard-panel" aria-labelledby="manager-agenda-title"><div class="md-heading"><h2 id="manager-agenda-title"><Gift :size="20" /> កម្មវិធីប្រចាំថ្ងៃ</h2></div><p class="md-date">{{ dateLabel(selected) }}</p><ul v-if="agenda.length" class="md-events"><li v-for="event in agenda" :key="event.key"><i :class="event.kind"></i><div><strong>{{ event.title }}</strong><p>{{ event.detail }}</p></div></li></ul><p v-else class="md-empty">{{ unavailable ? 'មិនទាន់អាចបង្ហាញទិន្នន័យបានទេ។' : 'មិនមានព្រឹត្តិការណ៍ក្នុងទិន្នន័យសម្រាប់ថ្ងៃនេះទេ។' }}</p></section>
-        <section class="dashboard-panel"><div class="md-heading"><h2><Clock3 :size="20" /> ច្បាប់ក្រុមកំពុងរង់ចាំ</h2><span class="md-count">{{ pending?.length ?? '—' }}</span></div><ul v-if="pending?.length" class="md-events"><li v-for="request in pending.slice(0, 3)" :key="request.id"><i class="pending"></i><div><strong>{{ request.userNameKh || request.employeeNameKh || request.khmer_name || 'បុគ្គលិក' }}</strong><p>{{ request.reason || '—' }}</p><small>{{ String(request.start_date || request.startDate || '').slice(0, 10) }} → {{ String(request.end_date || request.endDate || '').slice(0, 10) }}</small></div></li></ul><p v-else class="md-empty">{{ pending == null ? 'មិនមានទិន្នន័យសំណើពីប្រព័ន្ធ។' : 'មិនមានសំណើកំពុងរង់ចាំទេ។' }}</p></section>
-        <nav class="md-quick" aria-label="សកម្មភាពរហ័ស"><button class="md-button" @click="onNavigateEmployees?.()"><Users :size="18" /> បុគ្គលិកក្នុងផ្នែក</button><button class="md-button" @click="onNavigateLeaves?.()"><CalendarDays :size="18" /> សំណើសុំច្បាប់របស់ខ្ញុំ</button></nav>
-      </div>
+    <header class="mi-heading"><div><h1>ផ្ទាំងគ្រប់គ្រងផ្នែក</h1><p>សូមស្វាគមន៍ {{ currentUser?.nameKh }} · ព័ត៌មានសំខាន់ៗសម្រាប់រៀបចំក្រុមការងាររបស់អ្នក</p></div><button class="mi-button mi-primary" @click="onNavigateEmployees?.()"><Users :size="17" />បុគ្គលិកក្នុងផ្នែក<ArrowUpRight :size="16" /></button></header>
+    <div v-if="error" role="alert" class="form-error">{{ error }} <button class="mi-button" @click="onRetry?.()">ព្យាយាមម្ដងទៀត</button></div>
+    <div class="metrics-grid"><DashboardMetric v-for="metric in metrics" :key="metric.title" :loading="loading" :title="metric.title" :value="unavailable ? '—' : metric.value ?? '—'" :icon="metric.icon" :color="metric.color" :note="unavailable || metric.value == null ? 'មិនមានទិន្នន័យ' : metric.note" /></div>
+    <div v-if="loading" class="mi-loading" aria-busy="true">
+      <div class="mi-charts"><BaseSkeleton class="mi-chart-loading" :lines="6" label="កំពុងទាញយកក្រាហ្វបុគ្គលិក…" /><BaseSkeleton class="mi-chart-loading" :lines="6" label="កំពុងទាញយកស្ថានភាពគណនី…" /></div>
+      <BaseSkeleton :lines="3" label="កំពុងទាញយកព័ត៌មានក្រុម…" />
     </div>
+    <template v-else-if="!error">
+      <div class="mi-charts">
+        <section class="dashboard-panel mi-trend" aria-labelledby="manager-trend-title"><div class="mi-panel-heading"><div><h2 id="manager-trend-title"><TrendingUp :size="20" />និន្នាការចូលបម្រើការងារ</h2><p>ចំនួនបុគ្គលិកបច្ចុប្បន្ន តាមខែចូលធ្វើការ</p></div><select v-model.number="monthCount" aria-label="រយៈពេលក្រាហ្វ" @change="changePeriod"><option :value="6">៦ ខែ</option><option :value="12">១២ ខែ</option></select></div>
+          <div class="mi-trend-total" aria-live="polite"><strong>{{ number(selected ? selected.count : insights.hires) }}</strong><div><span>{{ selected ? monthLabel(selected.key) : 'បុគ្គលិកចូលថ្មីក្នុងរយៈពេលនេះ' }}</span><small>ចុចខែនីមួយៗ ដើម្បីមើលបុគ្គលិកខាងក្រោម</small></div><button v-if="selected" class="mi-clear" @click="selectedMonth = ''">សម្អាត</button></div>
+          <div class="mi-chart" :style="{ '--months': monthCount }" role="group" aria-label="ចំនួនបុគ្គលិកតាមខែ"><button v-for="month in insights.months" :key="month.key" :aria-label="`${monthLabel(month.key)}: ${month.count} បុគ្គលិក`" :aria-pressed="selectedMonth === month.key" :class="{ selected: selectedMonth === month.key }" @click="toggleMonth(month.key)"><span class="mi-bar-track"><span class="mi-bar" :style="{ height: `${month.count / maxHires * 100}%` }"><span>{{ number(month.count) }}</span></span></span><span class="mi-month-label">{{ monthsKh[Number(month.key.slice(5)) - 1] }}</span></button></div>
+          <p v-if="!insights.hires" class="mi-source">មិនមានបុគ្គលិកចូលថ្មីក្នុងរយៈពេលនេះទេ។</p><p class="mi-source">ផ្អែកលើថ្ងៃចូលធ្វើការរបស់បុគ្គលិកដែលមានក្នុងផ្នែក។</p>
+        </section>
+        <section class="dashboard-panel" aria-labelledby="manager-status-title"><div class="mi-panel-heading"><div><h2 id="manager-status-title"><ChartColumnIncreasing :size="20" />ស្ថានភាពគណនីបុគ្គលិក</h2><p>សមាមាត្រគណនីក្នុងក្រុមរបស់អ្នក</p></div></div><div class="mi-donut-wrap"><div class="mi-donut" :style="{ background: ring }" role="img" :aria-label="statuses.map(item => `${item.label}: ${item.count}`).join(', ')"><div><strong>{{ number(insights.team.length) }}</strong><span>បុគ្គលិកសរុប</span></div></div></div><div class="mi-status-list"><button v-for="status in statuses" :key="status.key" :aria-pressed="selectedStatus === status.key" :class="{ selected: selectedStatus === status.key }" @click="selectedStatus = selectedStatus === status.key ? '' : status.key"><i :style="{ background: status.color }"></i><span>{{ status.label }}</span><strong>{{ number(status.count) }}</strong><Check v-if="selectedStatus === status.key" :size="15" /></button></div></section>
+      </div>
+      <section class="dashboard-panel"><div class="mi-panel-heading"><div><h2><Users :size="19" />បុគ្គលិកក្នុងទិដ្ឋភាពនេះ<span class="mi-count">{{ number(members.length) }}</span></h2><p>{{ selected ? monthLabel(selected.key) : 'បុគ្គលិកទាំងអស់ក្នុងផ្នែក' }}{{ selectedStatus ? ' · ' + statuses.find(item => item.key === selectedStatus)?.label : '' }}</p></div><button v-if="selectedMonth || selectedStatus" class="mi-clear" @click="selectedMonth = ''; selectedStatus = ''">សម្អាតតម្រង</button></div><div v-if="members.length" class="mi-members"><div v-for="employee in members.slice(0, 6)" :key="employee.id" class="mi-member"><UserAvatar :src="employee.avatar" :name="employee.nameEn || employee.nameKh" :size="36" /><div><strong>{{ employee.nameKh || employee.nameEn || 'បុគ្គលិក' }}</strong><small>{{ employee.positionKh || employee.positionEn || 'មិនទាន់មានមុខតំណែង' }}</small></div></div></div><p v-else class="mi-empty">មិនមានបុគ្គលិកត្រូវនឹងតម្រងនេះទេ។</p><p v-if="members.length > 6" class="mi-source">បង្ហាញ ៦ នៃ {{ number(members.length) }} បុគ្គលិក។</p></section>
+    </template>
   </div>
 </template>
 
 <style scoped>
-.manager-overview { display: grid; gap: 24px; }
-.page-heading h1 { font-size: clamp(22px, 2vw, 30px); font-weight: 700; }
-.page-heading p, .md-muted { color: var(--muted); font-size: 12px; line-height: 1.9; margin-top: 6px; }
-.md-columns { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); gap: 24px; align-items: start; }
-.md-aside { display: grid; gap: 20px; min-width: 0; }
-.md-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-h2 { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 650; }
-h2 svg { color: var(--blue); flex-shrink: 0; }
-.md-button, .md-icon { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 9px 13px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--blue); font-size: 12px; cursor: pointer; }
-.md-button:hover, .md-icon:hover { background: var(--soft); }
-button:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
-.md-month { display: flex; align-items: center; justify-content: space-between; margin: 24px 0 16px; }
-.md-month h3 { font-size: 17px; font-weight: 650; }
-.md-icon { width: 44px; padding: 0; }
-.md-week, .md-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; text-align: center; }
-.md-week { color: var(--muted); font-size: 11px; margin-bottom: 10px; }
-.md-grid button { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 58px; border-radius: 12px; border: 1px solid transparent; font-size: 14px; color: var(--ink); cursor: pointer; }
-.md-grid button:hover { background: var(--soft); }
-.md-grid .outside { opacity: .4; }
-.md-grid .today { border-color: var(--blue); }
-.md-grid .selected { background: var(--blue); color: white; opacity: 1; }
-.md-grid .selected:hover { background: var(--blue); }
-.md-dots { display: flex; gap: 3px; height: 6px; margin-top: 5px; }
-i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-i.birthday { background: #a779d0; } i.hire { background: #248fd1; } i.approved { background: #1ca5a3; } i.pending { background: #e9b746; }
-.md-legend { display: flex; flex-wrap: wrap; gap: 14px; padding-top: 20px; border-top: 1px solid var(--line); margin-top: 16px; }
-.md-legend span { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; }
-.md-date { color: var(--blue); font-size: 12px; margin-top: 16px; }
-.md-events { list-style: none; padding: 0; margin: 12px 0 0; }
-.md-events li { display: flex; align-items: baseline; gap: 12px; padding: 15px 0; border-bottom: 1px solid var(--line); }
-.md-events li:last-child { border: 0; padding-bottom: 0; }
-.md-events strong { font-size: 13px; } .md-events p, .md-events small { color: var(--muted); font-size: 12px; line-height: 1.9; margin-top: 5px; overflow-wrap: anywhere; }
-.md-empty { padding: 26px 0 10px; color: var(--muted); font-size: 12px; line-height: 1.9; }
-.md-count { background: var(--soft); color: var(--blue); padding: 5px 10px; border-radius: 8px; }
-.md-quick { display: flex; flex-wrap: wrap; gap: 10px; } .md-quick button { flex: 1; }
-.md-source { margin-top: 14px; font-size: 11px; }
-button:disabled { opacity: .5; cursor: wait; }
-.spinning { animation: spin 1s linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .spinning { animation: none; } }
-@media (max-width: 1100px) { .md-columns { grid-template-columns: 1fr; } }
-@media (max-width: 600px) { .md-grid button { min-height: 44px; border-radius: 8px; } .md-week { font-size: 9px; } .md-heading { flex-wrap: wrap; } .md-legend { gap: 10px; } }
+.mi-loading { display:grid; gap:22px; }
+.mi-chart-loading { min-height:430px; }
+.manager-overview { display:grid; gap:22px; min-width:0; }
+.mi-heading { display:flex; align-items:center; justify-content:space-between; gap:20px; }
+.mi-heading h1 { font-size:clamp(24px,2.3vw,30px); font-weight:700; margin:5px 0 8px; }
+.mi-heading p,.mi-panel-heading p { color:var(--muted); font-size:12px; line-height:1.8; margin-top:6px; }
+.mi-button,.mi-clear { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:44px; padding:9px 14px; border:1px solid var(--line); border-radius:12px; color:var(--blue); font-size:12px; cursor:pointer; }
+.mi-primary { background:var(--action-fill,var(--blue)); color:white; border-color:transparent; flex-shrink:0; }
+.mi-charts { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr); gap:22px; align-items:stretch; }
+.dashboard-panel { min-width:0; }
+.mi-panel-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
+h2 { display:flex; align-items:center; flex-wrap:wrap; gap:8px; font-size:16px; font-weight:650; }
+h2 svg { color:var(--blue); flex-shrink:0; }
+select { min-height:42px; border:1px solid var(--line); border-radius:10px; padding:8px 12px; color:var(--ink); background:var(--surface); font-size:12px; }
+.mi-trend-total { display:flex; align-items:center; gap:14px; margin:22px 0 10px; min-height:56px; }
+.mi-trend-total>strong { font-size:34px; font-weight:750; color:var(--ink); }
+.mi-trend-total>div { display:grid; gap:5px; }
+.mi-trend-total span { font-size:12px; } .mi-trend-total small { color:var(--muted); font-size:10px; }
+.mi-clear { margin-left:auto; padding:5px 10px; border:0; background:var(--soft); }
+.mi-chart { display:grid; grid-template-columns:repeat(var(--months),minmax(0,1fr)); gap:10px; min-height:226px; padding-top:24px; background:repeating-linear-gradient(to top,transparent 0,transparent 48px,var(--line) 49px,transparent 50px); }
+.mi-chart button { display:flex; flex-direction:column; justify-content:flex-end; align-items:center; min-width:0; padding:0 4px; cursor:pointer; border-radius:9px; }
+.mi-chart button:hover,.mi-chart button.selected { background:color-mix(in srgb,var(--soft) 60%,transparent); }
+.mi-bar-track { display:flex; align-items:flex-end; width:100%; max-width:48px; height:168px; }
+.mi-bar { display:block; position:relative; width:100%; background:linear-gradient(to top,#008c9b,#53c5ca); border-radius:7px 7px 2px 2px; transition:height .25s; }
+.mi-chart button.selected .mi-bar { background:var(--blue); }
+.mi-bar>span { position:absolute; bottom:100%; left:0; width:100%; text-align:center; color:var(--ink); font-size:11px; padding-bottom:5px; }
+.mi-month-label { display:block; min-height:38px; padding-top:12px; font-size:10px; color:var(--muted); white-space:nowrap; }
+.mi-source { color:var(--muted); font-size:11px; line-height:1.8; margin-top:14px; }
+.mi-donut-wrap { display:grid; place-items:center; padding:24px 0 16px; }
+.mi-donut { display:grid; place-items:center; width:174px; height:174px; border-radius:50%; }
+.mi-donut>div { display:grid; place-content:center; gap:5px; text-align:center; width:132px; height:132px; border-radius:50%; background:var(--surface); }
+.mi-donut strong { font-size:30px; font-weight:700; } .mi-donut span { color:var(--muted); font-size:11px; }
+.mi-status-list { display:grid; gap:4px; }
+.mi-status-list button { display:flex; align-items:center; gap:9px; min-height:44px; padding:8px 10px; border:1px solid transparent; border-radius:10px; font-size:12px; cursor:pointer; }
+.mi-status-list button.selected { background:var(--soft); border-color:var(--line); }
+.mi-status-list i { width:8px; height:8px; border-radius:50%; } .mi-status-list strong { margin-left:auto; }
+.mi-empty { color:var(--muted); font-size:12px; line-height:1.9; padding:24px 0 8px; }
+.mi-members { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-top:22px; }
+.mi-member { display:flex; align-items:center; gap:10px; padding:12px; border:1px solid var(--line); border-radius:12px; min-width:0; }
+.mi-member>div { display:grid; gap:5px; min-width:0; } .mi-member strong,.mi-member small { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; } .mi-member strong { font-size:12px; } .mi-member small { color:var(--muted); font-size:10px; }
+.mi-count { padding:3px 8px; color:var(--blue); background:var(--soft); border-radius:7px; font-size:12px; }
+button:focus-visible,select:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+@media(max-width:1100px) { .mi-members { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:760px) { .mi-charts { grid-template-columns:1fr; } .mi-heading { align-items:flex-start; flex-direction:column; } .mi-chart { gap:3px; } .mi-chart button { padding:0 2px; } .mi-month-label { font-size:9px; writing-mode:vertical-rl; min-height:54px; } .mi-members { grid-template-columns:1fr; } .mi-panel-heading { flex-wrap:wrap; } }
+@media(prefers-reduced-motion:reduce) { .mi-bar { transition:none; } }
 </style>

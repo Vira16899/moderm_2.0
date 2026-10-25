@@ -130,7 +130,9 @@ function handleDepartmentChange(showConflict = false) {
   if (showConflict) checkManagerDepartment();
 }
 function openAddModal() { password.value = ""; formError.value = ""; isSavingUser.value = false; formData.value = initialFormData(); isAddModalOpen.value = true; }
+function openSalaryModal(user) { if (!isProtectedAdminId(user.id)) salaryUser.value = user; }
 function openEditModal(user) {
+  if (isProtectedAdminId(user.id)) return;
   password.value = "";
   editingUser.value = user;
   const ownedDepartments = user.role === 'MANAGER' ? managerAssignments(user) : [];
@@ -142,7 +144,7 @@ function openEditModal(user) {
 function closeUserForm() { if (isSavingUser.value) return; isAddModalOpen.value = false; editingUser.value = null; password.value = ""; formError.value = ""; }
 async function handleSaveEdit(event) {
   event.preventDefault();
-  if (!editingUser.value || isSavingUser.value || props.optionsLoading || props.optionsError || (formData.value.role === 'EMPLOYEE' && (positionsLoading.value || positionsError.value))) return;
+  if (!editingUser.value || isProtectedAdminId(editingUser.value.id) || isSavingUser.value || props.optionsLoading || props.optionsError || (formData.value.role === 'EMPLOYEE' && (positionsLoading.value || positionsError.value))) return;
   if (checkManagerDepartment()) return;
   formError.value = "";
   isSavingUser.value = true;
@@ -176,7 +178,7 @@ async function confirmDelete() {
 
 <template>
   <SalaryUpdateModal v-if="salaryUser && onUpdateSalary && !readOnly" :model-value="!!salaryUser" :user="salaryUser" :on-update-salary="onUpdateSalary" @update:model-value="value => { if (!value) salaryUser = null; }" @saved="salarySaved"/>
-  <AdminUserDetails v-if="viewingUser" :user="users.find((user) => user.id === viewingUser.id) || viewingUser" :on-back="closeDetails" :on-get-user="onGetUser" :on-salary-history="onSalaryHistory" :salary-version="salaryVersion" :on-edit-salary="!readOnly && onUpdateSalary ? user => salaryUser = user : undefined" :employee-view="readOnly" />
+  <AdminUserDetails v-if="viewingUser" :user="users.find((user) => user.id === viewingUser.id) || viewingUser" :on-back="closeDetails" :on-get-user="onGetUser" :on-salary-history="onSalaryHistory" :salary-version="salaryVersion" :on-edit-salary="!readOnly && onUpdateSalary ? openSalaryModal : undefined" :employee-view="readOnly" />
     <div v-show="!viewingUser" class="user-management space-y-6 animate-in fade-in duration-200">
     <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h1 class="text-2xl font-semibold text-slate-800 dark:text-white sm:text-3xl">{{ readOnly ? 'បុគ្គលិកក្រោមឱវាទ' : 'គ្រប់គ្រងអ្នកប្រើប្រាស់' }}</h1><p class="text-xs text-slate-500 dark:text-slate-400 sm:text-sm">{{ readOnly ? 'ស្វែងរក និងមើលព័ត៌មានលម្អិតរបស់បុគ្គលិកក្នុងនាយកដ្ឋានរបស់អ្នក' : 'បញ្ជីអ្នកប្រើប្រាស់ បន្ថែម កែសម្រួល មើលព័ត៌មានលម្អិត និងផ្អាក/បើកដំណើរការគណនី' }}</p></div><button v-if="!readOnly" type="button" class="flex items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-xs font-bold text-white shadow-md transition-all hover:bg-[#002235]" @click="openAddModal"><UserPlus class="h-4 w-4" />បន្ថែមអ្នកប្រើប្រាស់</button></header>
     <p v-if="optionsLoading" role="status" class="text-sm text-slate-500">កំពុងទាញយកនាយកដ្ឋាន…</p>
@@ -188,7 +190,7 @@ async function confirmDelete() {
       <template #cell-departmentKh="{ row: user }"><div class="font-semibold text-slate-800 dark:text-slate-200">{{ user.positionKh }}</div><div class="text-xs text-slate-400">{{ user.role === 'MANAGER' ? managerAssignments(user).map(item => item.nameKh || item.name || item.id).join(' · ') || 'មិនទាន់ចាត់តាំង' : user.departmentKh }}</div><p v-if="user.role === 'MANAGER' && managerAssignments(user).length > 1" class="mt-1 text-xs text-amber-700 dark:text-amber-300">ការចាត់តាំងស្ទួន៖ សូមកែប្រែនៅនាយកដ្ឋាន។</p></template>
       <template #cell-phone="{ row: user }">{{ user.phone || '—' }}</template>
       <template #cell-status="{ row: user }"><span :class="['inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold', user.status === 'active' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300']"><CheckCircle2 v-if="user.status === 'active'" class="h-3 w-3" /><XCircle v-else class="h-3 w-3" />{{ user.status === 'active' ? 'សកម្ម' : 'អសកម្ម' }}</span></template>
-      <template #cell-actions="{ row: user }"><div class="flex items-center justify-end gap-1.5"><button v-if="!readOnly && onUpdateSalary" class="icon-button salary-action" title="ធ្វើបច្ចុប្បន្នភាពប្រាក់បៀវត្ស" @click="salaryUser = user"><Banknote :size="17"/></button><button v-if="!readOnly" class="rounded-lg border border-slate-200 p-1.5 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-white/10" title="កែប្រែព័ត៌មាន" @click="openEditModal(user)"><Edit2 class="h-4 w-4" /></button><button v-if="!readOnly" :disabled="isProtectedAdminId(user.id)" :class="['rounded-lg border px-2 py-1 text-xs font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed', user.status === 'active' ? 'border-rose-200 text-rose-600 hover:bg-rose-50 dark:border-rose-800 dark:hover:bg-rose-950/50' : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-800 dark:hover:bg-emerald-950/50']" :title="isProtectedAdminId(user.id) ? 'មិនអាចផ្អាកគណនីអ្នកគ្រប់គ្រងប្រព័ន្ធនេះបានទេ។' : user.status === 'active' ? 'ផ្អាកដំណើរការ' : 'បើកដំណើរការ'" @click="onToggleStatus?.(user.id)"><Pause v-if="user.status === 'active'" :size="17"/><Play v-else :size="17"/></button><button v-if="!readOnly && onDeleteUser" :disabled="isProtectedAdminId(user.id)" class="danger-link disabled:opacity-40 disabled:cursor-not-allowed rounded-lg border border-rose-200 p-1.5 text-rose-600 transition-colors hover:bg-rose-50 dark:border-rose-800/60 dark:text-rose-400 dark:hover:bg-rose-950/50" :title="isProtectedAdminId(user.id) ? 'មិនអាចលុបគណនីអ្នកគ្រប់គ្រងប្រព័ន្ធនេះបានទេ។' : 'លុបគណនី'" @click="deleteError = ''; userToDelete = user"><Trash2 class="h-4 w-4" /></button></div></template>
+      <template #cell-actions="{ row: user }"><div class="flex items-center justify-end gap-1.5"><button v-if="!readOnly && onUpdateSalary" class="icon-button salary-action" :disabled="isProtectedAdminId(user.id)" :title="isProtectedAdminId(user.id) ? 'មិនអាចកែប្រែគណនីអ្នកគ្រប់គ្រងប្រព័ន្ធនេះបានទេ។' : 'ធ្វើបច្ចុប្បន្នភាពប្រាក់បៀវត្ស'" @click="openSalaryModal(user)"><Banknote :size="17"/></button><button v-if="!readOnly" class="rounded-lg border border-slate-200 p-1.5 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-white/10" :disabled="isProtectedAdminId(user.id)" :title="isProtectedAdminId(user.id) ? 'មិនអាចកែប្រែគណនីអ្នកគ្រប់គ្រងប្រព័ន្ធនេះបានទេ។' : 'កែប្រែព័ត៌មាន'" @click="openEditModal(user)"><Edit2 class="h-4 w-4" /></button><button v-if="!readOnly" :disabled="isProtectedAdminId(user.id)" :class="['rounded-lg border px-2 py-1 text-xs font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed', user.status === 'active' ? 'border-rose-200 text-rose-600 hover:bg-rose-50 dark:border-rose-800 dark:hover:bg-rose-950/50' : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-800 dark:hover:bg-emerald-950/50']" :title="isProtectedAdminId(user.id) ? 'មិនអាចផ្អាកគណនីអ្នកគ្រប់គ្រងប្រព័ន្ធនេះបានទេ។' : user.status === 'active' ? 'ផ្អាកដំណើរការ' : 'បើកដំណើរការ'" @click="onToggleStatus?.(user.id)"><Pause v-if="user.status === 'active'" :size="17"/><Play v-else :size="17"/></button><button v-if="!readOnly && onDeleteUser" :disabled="isProtectedAdminId(user.id)" class="danger-link disabled:opacity-40 disabled:cursor-not-allowed rounded-lg border border-rose-200 p-1.5 text-rose-600 transition-colors hover:bg-rose-50 dark:border-rose-800/60 dark:text-rose-400 dark:hover:bg-rose-950/50" :title="isProtectedAdminId(user.id) ? 'មិនអាចលុបគណនីអ្នកគ្រប់គ្រងប្រព័ន្ធនេះបានទេ។' : 'លុបគណនី'" @click="deleteError = ''; userToDelete = user"><Trash2 class="h-4 w-4" /></button></div></template>
     </BaseTable>
 
     <AdminCreateUserDialog v-if="isAddModalOpen && !readOnly" :departments="departments" :departments-loading="optionsLoading" :departments-error="optionsError" :on-retry="onRetry" :on-create="onAddUser" @close="isAddModalOpen = false" />
@@ -209,3 +211,7 @@ async function confirmDelete() {
     </BaseModal>
   </div>
 </template>
+
+<style scoped>
+.user-management :deep(.base-table td button:disabled) { opacity:.35; cursor:not-allowed; }
+</style>

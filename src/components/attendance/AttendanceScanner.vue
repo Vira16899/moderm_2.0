@@ -1,303 +1,63 @@
 <script setup>
-import { ref } from "vue";
-import { QrcodeStream } from "vue-qrcode-reader";
-
-const emit = defineEmits(["scanned", "close"]);
-
-const errorMessage = ref("");
-const isScanning = ref(true);
-
-const onDetect = (detectedCodes) => {
-  if (!detectedCodes?.length || !isScanning.value) {
-    return;
-  }
-
-  const value = detectedCodes[0]?.rawValue;
-
-  if (!value) {
-    return;
-  }
-
-  isScanning.value = false;
-
-  emit("scanned", value);
-};
-
-const onError = (error) => {
-  console.error("QR Scanner Error:", error);
-
-  if (error.name === "NotAllowedError") {
-    errorMessage.value =
-      "សូមអនុញ្ញាតឱ្យ Website ប្រើ Camera។";
-  } else if (error.name === "NotFoundError") {
-    errorMessage.value =
-      "រកមិនឃើញ Camera នៅលើឧបករណ៍នេះទេ។";
-  } else if (error.name === "NotReadableError") {
-    errorMessage.value =
-      "Camera កំពុងត្រូវបានប្រើដោយកម្មវិធីផ្សេង។";
-  } else {
-    errorMessage.value =
-      "មិនអាចបើក Camera បានទេ។";
-  }
-};
+import { onBeforeUnmount, ref } from 'vue';
+import { QrcodeStream } from 'vue-qrcode-reader';
+import { QrCode, X, CameraOff, LoaderCircle } from 'lucide-vue-next';
+import BaseModal from '../base/BaseModal.vue';
+import BaseButton from '../base/BaseButton.vue';
+const emit = defineEmits(['scanned','close']);
+const cameraError = ref(''), cameraReady = ref(false), accepted = ref(false);
+let closed = false;
+onBeforeUnmount(() => { closed = true; });
+function close() { closed = true; accepted.value = true; emit('close'); }
+function onDetect(codes) {
+  if (closed || accepted.value || !Array.isArray(codes)) return;
+  const code = codes.find(item => typeof item.rawValue === 'string' && item.rawValue.trim());
+  if (code) { accepted.value = true; emit('scanned', code.rawValue); }
+}
+function onCameraError(cause) {
+  if (closed) return;
+  cameraReady.value = false;
+  cameraError.value = ({
+    NotAllowedError:'សូមអនុញ្ញាតឱ្យប្រើកាមេរ៉ាក្នុងការកំណត់របស់កម្មវិធីរុករក រួចបើកម៉ាស៊ីនស្កេនម្ដងទៀត។',
+    NotFoundError:'រកមិនឃើញកាមេរ៉ាទេ។ សូមភ្ជាប់កាមេរ៉ា ឬប្រើឧបករណ៍ដែលមានកាមេរ៉ា។',
+    NotReadableError:'កាមេរ៉ាកំពុងត្រូវបានប្រើដោយកម្មវិធីផ្សេង។ សូមបិទកម្មវិធីនោះ រួចព្យាយាមម្ដងទៀត។',
+    OverconstrainedError:'កាមេរ៉ានេះមិនអាចប្រើបានទេ។ សូមសាកល្បងកាមេរ៉ាផ្សេង។',
+  })[cause?.name] || 'មិនអាចបើកកាមេរ៉ាបានទេ។ សូមពិនិត្យកាមេរ៉ា និងការអនុញ្ញាត រួចព្យាយាមម្ដងទៀត។';
+}
 </script>
 
 <template>
-  <div class="scanner-overlay">
-    <div class="scanner-modal">
-
-      <!-- Header -->
-      <div class="scanner-header">
-        <div>
-          <h2>Scan Attendance QR</h2>
-          <p>
-            សូមស្កេន QR Code ដែលបង្ហាញនៅ Factory TV
-          </p>
-        </div>
-
-        <button
-          type="button"
-          class="close-button"
-          @click="emit('close')"
-        >
-          ✕
-        </button>
-      </div>
-
-      <!-- Camera -->
-      <div class="scanner-container">
-
-        <QrcodeStream
-          v-if="isScanning"
-          @detect="onDetect"
-          @error="onError"
-        />
-
-        <!-- Scanner frame -->
-        <div class="scanner-frame">
-          <span class="corner top-left"></span>
-          <span class="corner top-right"></span>
-          <span class="corner bottom-left"></span>
-          <span class="corner bottom-right"></span>
-        </div>
-
-      </div>
-
-      <!-- Error -->
-      <div
-        v-if="errorMessage"
-        class="error-message"
-      >
-        {{ errorMessage }}
-      </div>
-
-      <!-- Instruction -->
-      <p class="scanner-instruction">
-        ដាក់ QR Code ឱ្យនៅក្នុងប្រអប់
-      </p>
-
-      <!-- Close -->
-      <button
-        type="button"
-        class="cancel-button"
-        @click="emit('close')"
-      >
-        បោះបង់
-      </button>
-
+  <BaseModal model-value title="ស្កេន QR កត់ត្រាវត្តមាន" size="sm" class="attendance-scanner-modal" @update:model-value="open => { if (!open) close(); }">
+    <div class="scanner-content"><header class="scanner-header"><span class="scanner-heading-icon"><QrCode :size="21" /></span><div><h2>ស្កេន QR វត្តមាន</h2><p>ស្កេន QR ដោយប្រើកាមេរ៉ារបស់អ្នក</p></div><button type="button" class="scanner-close" aria-label="បិទម៉ាស៊ីនស្កេន" @click="close"><X :size="19" /></button></header>
+      <div class="scanner-camera"><QrcodeStream v-if="!accepted && !cameraError" :formats="['qr_code']" @detect="onDetect" @error="onCameraError" @camera-on="cameraReady = true" /><div v-if="!cameraReady && !cameraError && !accepted" class="scanner-camera-loading" role="status"><LoaderCircle :size="24" class="scanner-spinning" /><span>កំពុងបើកកាមេរ៉ា…</span></div><div v-if="cameraError" class="scanner-camera-unavailable"><CameraOff :size="32" /><span>កាមេរ៉ាមិនអាចប្រើបាន</span></div><div v-if="!cameraError && !accepted" class="scanner-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div>
+      <p v-if="cameraError" class="scanner-error" role="alert">{{ cameraError }}</p><p v-else class="scanner-hint">ដាក់ QR នៅកណ្ដាលប្រអប់ ដើម្បីស្កេន។</p>
+      <footer class="scanner-footer"><BaseButton variant="outline" @click="close">បោះបង់</BaseButton></footer>
     </div>
-  </div>
+  </BaseModal>
 </template>
 
 <style scoped>
-.scanner-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-
-  background: rgba(0, 0, 0, 0.75);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 20px;
-}
-
-.scanner-modal {
-  width: 100%;
-  max-width: 520px;
-
-  background: var(--surface);
-  color: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: 20px;
-
-  padding: 24px;
-
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-
-.scanner-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-
-  margin-bottom: 20px;
-}
-
-.scanner-header h2 {
-  margin: 0;
-
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.scanner-header p {
-  margin: 6px 0 0;
-
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.close-button {
-  width: 36px;
-  height: 36px;
-
-  border: none;
-  border-radius: 50%;
-
-  background: var(--soft);
-  color: var(--ink);
-
-  cursor: pointer;
-
-  font-size: 18px;
-}
-
-.scanner-container {
-  position: relative;
-
-  width: 100%;
-  aspect-ratio: 1 / 1;
-
-  overflow: hidden;
-
-  border-radius: 16px;
-
-  background: black;
-}
-
-.scanner-container :deep(video) {
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-}
-
-.scanner-frame {
-  position: absolute;
-
-  width: 65%;
-  height: 65%;
-
-  left: 17.5%;
-  top: 17.5%;
-
-  pointer-events: none;
-}
-
-.corner {
-  position: absolute;
-
-  width: 35px;
-  height: 35px;
-
-  border-color: white;
-  border-style: solid;
-}
-
-.top-left {
-  top: 0;
-  left: 0;
-
-  border-width: 4px 0 0 4px;
-}
-
-.top-right {
-  top: 0;
-  right: 0;
-
-  border-width: 4px 4px 0 0;
-}
-
-.bottom-left {
-  bottom: 0;
-  left: 0;
-
-  border-width: 0 0 4px 4px;
-}
-
-.bottom-right {
-  bottom: 0;
-  right: 0;
-
-  border-width: 0 4px 4px 0;
-}
-
-.scanner-instruction {
-  text-align: center;
-
-  margin: 16px 0;
-
-  color: var(--muted);
-
-  font-size: 15px;
-}
-
-.error-message {
-  margin-top: 12px;
-
-  padding: 12px;
-
-  border-radius: 10px;
-
-  background: #fff0f2;
-  color: #a62d42;
-
-  text-align: center;
-
-  font-size: 14px;
-}
-
-.cancel-button {
-  width: 100%;
-
-  padding: 12px;
-
-  border: none;
-  border-radius: 10px;
-
-  background: var(--soft);
-
-  color: var(--ink);
-
-  font-size: 15px;
-  font-weight: 600;
-
-  cursor: pointer;
-}
-
-.cancel-button:hover {
-  background: var(--line);
-}
-
-.dark .scanner-overlay {
-  background: rgba(2, 10, 18, 0.84);
-}
-
-.dark .error-message {
-  background: #3e272d;
-  color: #ffabb8;
-}
+:global(dialog.attendance-scanner-modal) { --scanner-accent:#008c9b; --scanner-soft:#eaf6f7; width:calc(100% - 24px); max-width:420px !important; padding:20px; max-height:calc(100dvh - 24px); }
+.scanner-content { display:grid; gap:16px; }
+.scanner-header { display:flex; align-items:flex-start; gap:10px; }
+.scanner-heading-icon { width:38px; height:38px; flex-shrink:0; display:grid; place-items:center; background:var(--scanner-soft); color:var(--scanner-accent); border-radius:11px; }
+.scanner-header>div { flex:1; min-width:0; } .scanner-header h2 { margin:0; font-size:17px; font-weight:650; line-height:1.6; }
+.scanner-header p { margin-top:4px; font-size:11px; color:var(--muted); line-height:1.8; }
+.scanner-close { display:grid; place-items:center; width:36px; height:36px; flex-shrink:0; background:var(--scanner-soft); color:var(--muted); border-radius:10px; cursor:pointer; }
+.scanner-close:hover { color:var(--scanner-accent); background:var(--scanner-soft); }
+.scanner-camera { position:relative; height:clamp(160px,32dvh,250px); width:100%; overflow:hidden; border-radius:14px; background:#101b25; }
+.scanner-camera :deep(video) { width:100%; height:100%; object-fit:cover; }
+.scanner-camera-loading,.scanner-camera-unavailable { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:12px; color:#dce8ee; font-size:12px; }
+.scanner-frame { position:absolute; top:16%; left:25%; width:50%; height:68%; pointer-events:none; }
+.scanner-frame i { position:absolute; width:24px; height:24px; border-style:solid; border-color:white; }
+.scanner-frame i:nth-child(1) { top:0; left:0; border-width:3px 0 0 3px; } .scanner-frame i:nth-child(2) { top:0; right:0; border-width:3px 3px 0 0; } .scanner-frame i:nth-child(3) { bottom:0; left:0; border-width:0 0 3px 3px; } .scanner-frame i:nth-child(4) { bottom:0; right:0; border-width:0 3px 3px 0; }
+.scanner-hint { text-align:center; font-size:11px; color:var(--muted); line-height:1.8; }
+.scanner-error { padding:10px 12px; border-radius:10px; background:#fff0f2; color:#a53b50; font-size:12px; line-height:1.8; overflow-wrap:anywhere; }
+.scanner-footer { display:flex; justify-content:flex-end; padding-top:12px; border-top:1px solid var(--line); }
+button:focus-visible { outline:2px solid var(--scanner-accent); outline-offset:3px; }
+.scanner-spinning { animation:scanner-spin 1s linear infinite; } @keyframes scanner-spin { to { transform:rotate(360deg); } }
+:global(.dark dialog.attendance-scanner-modal) { --scanner-accent:#62d3dc; --scanner-soft:#18383f; }
+:global(.dark) .scanner-error { color:#f5a5b5; background:#422630; }
+@media(max-height:600px) { :global(dialog.attendance-scanner-modal) { padding:16px; } .scanner-content { gap:12px; } }
+@media(prefers-reduced-motion:reduce) { .scanner-spinning { animation:none; } }
 </style>

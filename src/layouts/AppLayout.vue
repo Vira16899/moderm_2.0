@@ -87,6 +87,7 @@ const SECTION_ROUTE_NAMES = {
   manager_employees: "manager-employees",
   manager_leave_requests: "manager-leave-requests",
   manager_profile: "manager-profile",
+  manager_salary: "manager-salary",
   employee_dashboard: "employee-dashboard",
   employee_profile: "employee-profile",
   dashboard: "employee-dashboard",
@@ -681,8 +682,6 @@ function App({ router, route }) {
     }
     if (activeSection === "admin_attendance") {
       return <Page
-        onGenerate={adminApi.generateAttendanceQr}
-        onDisplay={adminApi.getAttendanceQr}
         onRecords={adminApi.getAttendanceRecords}
       />;
     }
@@ -742,7 +741,7 @@ function App({ router, route }) {
 
       />;
     }
-    if (activeSection === "employee_salary") {
+    if (activeSection === "employee_salary" || activeSection === "manager_salary") {
       return <Page />;
     }
     if (activeSection === "employee_leave_request") {
@@ -860,7 +859,7 @@ function App({ router, route }) {
     inert={isMobile && isSidebarOpen ? true : undefined}
     class="flex-1 h-full overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 w-full"
         >
-          <div class="max-w-7xl w-full mx-auto pb-4">
+          <div class="workspace-content w-full mx-auto pb-4">
             <RouterView v-slots={{ default: ({ Component }) => Component ? renderMainContent(Component) : null }} />
             <footer class="workspace-footer"><span> {new Date().getFullYear()} GarmentPro</span><span>រួមគ្នាឆ្ពោះទៅរកភាពរីកចម្រើន</span></footer>
           </div>

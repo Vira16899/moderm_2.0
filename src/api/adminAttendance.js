@@ -5,6 +5,15 @@ export const sessionLabels = {
   AFTERNOON_CHECK_OUT: 'ចេញពីការងារពេលរសៀល',
 };
 
+export function attendanceDateError(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value ?? '') || !Number.isFinite(Date.parse(value)) || new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) !== value) return 'សូមជ្រើសរើសកាលបរិច្ឆេទត្រឹមត្រូវ។';
+  return '';
+}
+
+export function attendanceQrForDate(payload, date) {
+  return attendanceQrItems(payload).filter(item => !item.date || item.date === date);
+}
+
 function unwrap(payload) { return payload?.data?.data ?? payload?.data ?? payload; }
 
 export function attendanceQrItems(payload) {

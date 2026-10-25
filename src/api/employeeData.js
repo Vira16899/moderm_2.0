@@ -91,8 +91,8 @@ export function attendanceHistory(payload) {
   return list.map(item => ({
     ...item,
     date: dateOnly(item.date ?? item.attendance_date ?? item.created_at),
-    checkInTime: item.checkInTime ?? item.check_in_time ?? item.check_in ?? item.clockIn ?? item.MORNING_CHECK_IN ?? item.morning_check_in,
-    checkOutTime: item.checkOutTime ?? item.check_out_time ?? item.check_out ?? item.clockOut ?? item.AFTERNOON_CHECK_OUT ?? item.afternoon_check_out,
+    checkInTime: item.checkInTime ?? item.check_in_time ?? item.check_in ?? item.clockIn ?? item.clock_in ?? item.MORNING_CHECK_IN ?? item.morning_check_in,
+    checkOutTime: item.checkOutTime ?? item.check_out_time ?? item.check_out ?? item.clockOut ?? item.clock_out ?? item.AFTERNOON_CHECK_OUT ?? item.afternoon_check_out,
   })).sort((a, b) => b.date.localeCompare(a.date));
 }
 export function money(value) {

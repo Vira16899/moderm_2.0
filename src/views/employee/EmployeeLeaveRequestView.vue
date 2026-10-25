@@ -6,11 +6,11 @@ import BaseModal from '@/components/base/BaseModal.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import BaseSkeleton from '@/components/base/BaseSkeleton.vue';
-import { Plus, CalendarDays, X, Send, Pencil, TriangleAlert, Search, Clock3, CheckCircle2, XCircle, FileText, ArrowUpRight, ChevronLeft, ChevronRight, Paperclip, Eye, Ban } from 'lucide-vue-next';
+import { Plus, CalendarDays, X, Send, Pencil, TriangleAlert, Search, Clock3, CheckCircle2, XCircle, FileText, ArrowUpRight, Paperclip, Ban } from 'lucide-vue-next';
 import { notify } from '@/stores/toasts';
 import { employeeError } from '@/utils/employeeMessages';
 defineOptions({ inheritAttrs: false });
-defineProps({ manager: Boolean });
+const props = defineProps({ manager: Boolean });
 
 const rows = ref([]);
 const loading = ref(false);
@@ -21,8 +21,6 @@ const editing = ref(null);
 const cancelling = ref(null);
 const filter = ref('all');
 const search = ref('');
-const page = ref(1);
-const pageSize = 8;
 const selected = ref(null);
 const number = value => new Intl.NumberFormat('km-KH').format(value);
 const formatDate = value => {
@@ -40,16 +38,11 @@ const summaries = computed(() => [
 const form = reactive({ startDate: '', endDate: '', reason: '', fileUrl: '' });
 const fieldErrors = ref({});
 const visibleRows = computed(() => {
-  const query = search.value.trim().toLowerCase();
+  const query = props.manager ? '' : search.value.trim().toLowerCase();
   return rows.value.filter(row => (filter.value === 'all' || row.status === filter.value)
     && (!query || [row.id, row.reason, row.startDate, row.endDate, statusLabels[row.status]]
       .some(value => String(value ?? '').toLowerCase().includes(query))));
 });
-const pageCount = computed(() => Math.max(1, Math.ceil(visibleRows.value.length / pageSize)));
-const pagedRows = computed(() => visibleRows.value.slice((page.value - 1) * pageSize, page.value * pageSize));
-watch([filter, search], () => { page.value = 1; });
-watch(pageCount, count => { page.value = Math.min(page.value, count); });
-function resetFilters() { filter.value = 'all'; search.value = ''; }
 const days = computed(() => leaveDays(form.startDate, form.endDate));
 const attachmentRequired = computed(() => days.value > 2);
 const columns = [
@@ -108,46 +101,27 @@ onMounted(load);
 </script>
 
 <template>
-  <div class="ess-page employee-leave-page" :class="{ 'manager-leave-page': manager }">
-    <header v-if="manager" class="ml-heading"><div><h1>សំណើសុំច្បាប់</h1><p>ដាក់សំណើ កែប្រែ និងតាមដានស្ថានភាពសុំច្បាប់របស់អ្នក។</p></div><div class="ml-heading-actions"><BaseButton :disabled="busy" @click="openForm()"><Plus :size="17" />ស្នើសុំច្បាប់ថ្មី</BaseButton></div></header>
-    <header v-else class="el-hero">
-      <div class="el-hero-copy"><span class="el-eyebrow"><CalendarDays :size="14" /> {{ manager ? 'សេវាកម្មអ្នកគ្រប់គ្រង' : 'សេវាកម្មបុគ្គលិក' }}</span><h1>ស្នើសុំច្បាប់ឈប់សម្រាក</h1><p>រៀបចំថ្ងៃឈប់សម្រាក និងតាមដានសំណើរបស់អ្នកនៅទីនេះ</p></div>
-      <button class="el-create" :disabled="busy" @click="openForm()"><Plus :size="18" /> ស្នើសុំច្បាប់ថ្មី <ArrowUpRight :size="16" /></button>
-      <CalendarDays class="el-hero-art" :size="136" :stroke-width="1" aria-hidden="true" />
-    </header>
+  <div class="ess-page employee-leave-page compact-leave-page" :class="{ 'manager-leave-page': manager }">
+    <header class="ml-heading"><div><h1>{{ manager ? 'សំណើសុំច្បាប់' : 'ស្នើសុំច្បាប់ឈប់សម្រាក' }}</h1><p>ដាក់សំណើ កែប្រែ និងតាមដានស្ថានភាពឈប់សម្រាករបស់អ្នក។</p></div><div class="ml-heading-actions"><BaseButton :disabled="busy" @click="openForm()"><Plus :size="17" />ស្នើសុំច្បាប់ថ្មី</BaseButton></div></header>
     <div class="el-summary" aria-label="សង្ខេបសំណើសុំច្បាប់">
-      <div v-for="item in summaries" :key="item.value" class="el-summary-card" :class="item.color">
-        <span class="el-summary-icon"><component :is="item.icon" :size="21" /></span><div><span>{{ item.label }}</span><strong>{{ loading || error ? '—' : number(item.count) }}</strong></div>
+      <div v-for="item in summaries" :key="item.value" class="el-summary-card" :class="item.color" :aria-busy="loading">
+        <span class="el-summary-icon"><component :is="item.icon" :size="21" /></span><div><span>{{ item.label }}</span><strong><BaseSkeleton v-if="loading" inline :lines="1" /><template v-else>{{ error ? '—' : number(item.count) }}</template></strong></div>
       </div>
     </div>
     <section class="el-history" :aria-busy="loading" :aria-labelledby="manager ? 'manager-leave-history-title' : 'employee-leave-history-title'">
       <div v-if="!manager" class="el-panel-heading"><div class="el-heading-copy"><span class="el-heading-icon"><FileText :size="21" /></span><div><h2 id="employee-leave-history-title">ប្រវត្តិសុំច្បាប់</h2><p>ព័ត៌មានសំណើ និងស្ថានភាពនៃការអនុម័ត</p></div></div></div>
       <div class="el-toolbar"><div v-if="manager" class="ml-list-title"><h2 id="manager-leave-history-title">សំណើរបស់ខ្ញុំ</h2><span>{{ loading || error ? '—' : number(visibleRows.length) }} សំណើ</span></div>
-        <label class="el-search"><Search :size="18" /><input v-model="search" type="search" placeholder="ស្វែងរកមូលហេតុ ឬកាលបរិច្ឆេទ…" aria-label="ស្វែងរកសំណើសុំច្បាប់" /></label>
+        <label v-if="!manager" class="el-search"><Search :size="18" /><input v-model="search" type="search" placeholder="ស្វែងរកមូលហេតុ ឬកាលបរិច្ឆេទ…" aria-label="ស្វែងរកសំណើសុំច្បាប់" /></label>
         <div class="el-filters"><select v-model="filter" class="filter-select" aria-label="ស្ថានភាពសំណើ"><option value="all">ស្ថានភាពទាំងអស់</option><option v-for="(label, value) in statusLabels" :key="value" :value="value">{{ label }}</option></select></div>
       </div>
-      <BaseTable v-if="manager" :columns="columns" :rows="visibleRows" :loading="loading" :error="error" row-clickable :row-label="row => 'មើលសំណើ ' + (row.reason || formatDate(row.startDate))" caption="បញ្ជីសំណើសុំច្បាប់របស់ខ្ញុំ" empty-text="មិនមានសំណើត្រូវបង្ហាញទេ។" @retry="load" @row-click="row => selected = row">
+      <BaseTable :columns="columns" :rows="visibleRows" :loading="loading" :error="error" row-clickable :row-label="row => 'មើលសំណើ ' + (row.reason || formatDate(row.startDate))" caption="បញ្ជីសំណើសុំច្បាប់របស់ខ្ញុំ" empty-text="មិនមានសំណើត្រូវបង្ហាញទេ។" @retry="load" @row-click="row => selected = row">
         <template #cell-startDate="{row}"><div class="ml-compact-dates"><span>{{ formatDate(row.startDate) }} <span class="ml-date-separator" aria-hidden="true">→</span> {{ formatDate(row.endDate) }}</span><small>{{ number(leaveDays(row.startDate, row.endDate)) }} ថ្ងៃ</small></div></template>
         <template #cell-reason="{row}"><div class="ml-request-summary"><span class="ml-request-icon"><CalendarDays :size="18" /></span><strong :title="row.reason">{{ row.reason || 'សំណើសុំច្បាប់' }}</strong><a v-if="safeFileUrl(row.fileUrl)" class="ml-file-link" :href="safeFileUrl(row.fileUrl)" target="_blank" rel="noopener noreferrer" aria-label="មើលឯកសារបញ្ជាក់" title="មើលឯកសារបញ្ជាក់"><Paperclip :size="16" /></a></div></template>
         <template #cell-appliedDate="{value}">{{ formatDate(value) }}</template>
         <template #cell-status="{value}"><span class="ess-status el-status" :class="value"><i></i>{{ statusLabels[value] || value }}</span></template>
         <template #cell-actions="{row}"><div v-if="canChange(row)" class="el-row-actions"><BaseButton variant="ghost" size="sm" :disabled="busy" :aria-label="`កែប្រែសំណើ ${row.id}`" @click="openForm(row)"><Pencil :size="17" /></BaseButton><BaseButton class="el-cancel" variant="ghost" size="sm" :disabled="busy" :aria-label="`លុបចោលសំណើ ${row.id}`" @click="cancelling = row"><Ban :size="17" /></BaseButton></div><span v-else class="ml-muted">—</span></template>
       </BaseTable>
-      <BaseSkeleton v-else-if="loading" :lines="6" label="កំពុងទាញយកប្រវត្តិសុំច្បាប់…" />
-      <div v-else-if="error" class="el-empty"><FileText :size="30" /><h3>មិនអាចបង្ហាញប្រវត្តិបានទេ</h3><p>សូមពិនិត្យការតភ្ជាប់ ហើយព្យាយាមម្ដងទៀត។</p><button class="ess-button" @click="load">ព្យាយាមម្ដងទៀត</button></div>
-      <div v-else-if="pagedRows.length" class="el-table-wrap">
-        <table class="el-table"><thead><tr><th scope="col">សំណើសុំច្បាប់</th><th scope="col">រយៈពេលឈប់សម្រាក</th><th scope="col">មូលហេតុ</th><th scope="col">ស្ថានភាព</th><th scope="col">សកម្មភាព</th></tr></thead>
-          <tbody><tr v-for="(row, index) in pagedRows" :key="row.id ?? index">
-            <td data-label="សំណើ"><div class="el-request"><span class="el-type-icon"><CalendarDays :size="18" /></span><div><strong>{{ row.reason || 'សំណើសុំច្បាប់' }}</strong><small>#{{ row.id ?? '—' }} · {{ formatDate(row.appliedDate) }}</small></div></div></td>
-            <td data-label="រយៈពេល"><div class="el-dates"><strong>{{ formatDate(row.startDate) }}</strong><span>ដល់ {{ formatDate(row.endDate) }}</span><small>{{ number(leaveDays(row.startDate, row.endDate)) }} ថ្ងៃ</small></div></td>
-            <td data-label="មូលហេតុ"><p class="el-reason" :title="row.reason">{{ row.reason || '—' }}</p><span v-if="row.fileUrl" class="el-attachment"><Paperclip :size="12" /> មានឯកសារភ្ជាប់</span></td>
-            <td data-label="ស្ថានភាព"><span class="ess-status el-status" :class="row.status"><i></i>{{ statusLabels[row.status] || row.status || '—' }}</span></td>
-            <td data-label="សកម្មភាព"><div class="el-row-actions"><button class="el-icon-button" :aria-label="`មើលព័ត៌មានសំណើ ${row.id ?? ''}`" title="មើលព័ត៌មាន" @click="selected = row"><Eye :size="17" /></button><template v-if="canChange(row)"><button class="el-icon-button" :disabled="busy" :aria-label="`កែប្រែសំណើ ${row.id}`" title="កែប្រែ" @click="openForm(row)"><Pencil :size="16" /></button><button class="el-icon-button el-cancel" :disabled="busy" :aria-label="`លុបចោលសំណើ ${row.id}`" title="លុបចោល" @click="cancelling = row"><Ban :size="16" /></button></template></div></td>
-          </tr></tbody>
-        </table>
-      </div>
-      <div v-else class="el-empty"><span class="el-empty-icon"><CalendarDays :size="30" /></span><h3>{{ rows.length ? 'រកមិនឃើញសំណើដែលត្រូវគ្នាទេ' : 'ចាប់ផ្តើមរៀបចំថ្ងៃឈប់សម្រាករបស់អ្នក' }}</h3><p>{{ rows.length ? 'សាកល្បងប្ដូរតម្រង ឬពាក្យស្វែងរករបស់អ្នក។' : 'សំណើដែលអ្នកបានដាក់នឹងបង្ហាញនៅទីនេះ។' }}</p><button v-if="rows.length" class="ess-button" @click="resetFilters">សម្អាតតម្រង</button><button v-else class="ess-button ess-primary" @click="openForm()"><Plus :size="16" /> ស្នើសុំច្បាប់ថ្មី</button></div>
-      <footer v-if="!manager && !loading && !error && visibleRows.length" class="el-pagination"><p>បង្ហាញ {{ number((page - 1) * pageSize + 1) }}–{{ number(Math.min(page * pageSize, visibleRows.length)) }} នៃ {{ number(visibleRows.length) }} សំណើ</p><div><button class="el-icon-button" aria-label="ទំព័រមុន" :disabled="page === 1" @click="page--"><ChevronLeft :size="18" /></button><span>{{ number(page) }} / {{ number(pageCount) }}</span><button class="el-icon-button" aria-label="ទំព័របន្ទាប់" :disabled="page === pageCount" @click="page++"><ChevronRight :size="18" /></button></div></footer>
+
     </section>
     <p class="el-help"><Clock3 :size="15" /> អ្នកអាចកែប្រែ ឬលុបចោលសំណើដែលកំពុងរង់ចាំការអនុម័ត។</p>
     <BaseModal :model-value="Boolean(selected)" class="account-action-modal employee-action-modal el-detail-modal" title="ព័ត៌មានសំណើសុំច្បាប់" @update:model-value="value => { if (!value) selected = null; }">
@@ -191,11 +165,11 @@ onMounted(load);
 .ml-compact-dates>span { white-space:nowrap; }
 .ml-date-separator { margin:0 6px; color:var(--muted); }
 .ml-compact-dates small { padding:2px 7px; border-radius:6px; color:var(--blue); background:var(--soft); font-size:10px; white-space:nowrap; }
-.manager-leave-page :deep(.base-table td) { padding:10px 18px; height:64px; }
-.manager-leave-page :deep(.base-table th) { padding:11px 18px; }
-.manager-leave-page .el-status { padding:4px 9px; }
-.manager-leave-page .el-summary-card { box-shadow:none; }
-.manager-leave-page .el-history { box-shadow:0 3px 14px #16354a04; }
+.compact-leave-page :deep(.base-table td) { padding:10px 18px; height:64px; }
+.compact-leave-page :deep(.base-table th) { padding:11px 18px; }
+.compact-leave-page .el-status { padding:4px 9px; }
+.compact-leave-page .el-summary-card { box-shadow:none; }
+.compact-leave-page .el-history { box-shadow:0 3px 14px #16354a04; }
 .employee-days>span { display:flex; align-items:center; justify-content:space-between; flex:1; gap:16px; }
 .employee-days strong { font-size:16px; }
 
@@ -206,14 +180,14 @@ onMounted(load);
 .ml-list-title { display:flex; align-items:center; gap:12px; flex-shrink:0; }
 .ml-list-title h2 { font-size:17px; font-weight:650; }
 .ml-list-title>span { color:var(--blue); background:var(--soft); padding:4px 10px; border-radius:8px; font-size:12px; }
-.manager-leave-page .el-toolbar { padding:20px; flex-wrap:wrap; }
-.manager-leave-page .el-search { max-width:340px; }
-.manager-leave-page .el-summary-card { border-radius:18px; padding:20px; }
-.manager-leave-page .el-history { border-radius:20px; }
-.manager-leave-page :deep(.base-table-panel) { border:0; border-radius:0; box-shadow:none; }
-.manager-leave-page .el-row-actions { justify-content:flex-end; }
+.compact-leave-page .el-toolbar { padding:20px; flex-wrap:wrap; }
+.compact-leave-page .el-search { max-width:340px; }
+.compact-leave-page .el-summary-card { border-radius:18px; padding:20px; }
+.compact-leave-page .el-history { border-radius:20px; }
+.compact-leave-page :deep(.base-table-panel) { border:0; border-radius:0; box-shadow:none; }
+.compact-leave-page .el-row-actions { justify-content:flex-end; }
 .ml-muted { color:var(--muted); }
-@media(max-width:760px) { .ml-heading { align-items:flex-start; flex-direction:column; } .ml-heading-actions { width:100%; } .ml-heading-actions>* { flex:1; } .manager-leave-page .el-search { max-width:none; } .manager-leave-page .el-toolbar { padding:16px; } }
+@media(max-width:760px) { .ml-heading { align-items:flex-start; flex-direction:column; } .ml-heading-actions { width:100%; } .ml-heading-actions>* { flex:1; } .compact-leave-page .el-search { max-width:none; } .compact-leave-page .el-toolbar { padding:16px; } }
 
 .el-field-error { color: #be123c; font-size: 12px; line-height: 1.8; }
 .el-url-label small { color: var(--muted); font-size: 12px; line-height: 1.8; }
@@ -223,7 +197,6 @@ onMounted(load);
 .el-icon-button:focus-visible, .el-create:focus-visible, .el-refresh:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 .el-hero { position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 28px 30px; border-radius: 22px; background: linear-gradient(110deg, #078795, #086e7d); color: white; }
 .el-hero-copy { position: relative; z-index: 1; }
-.el-eyebrow { display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px; border: 1px solid #ffffff35; border-radius: 20px; background: #ffffff10; font-size: 11px; }
 .el-hero h1 { font-size: clamp(23px, 2.4vw, 29px); margin: 12px 0 6px; line-height: 1.7; }
 .el-hero p { color: #d4f5f7; font-size: 13px; line-height: 1.8; }
 .el-hero-art { position: absolute; right: 18%; top: -14px; transform: rotate(-16deg); opacity: .09; z-index: -1; }

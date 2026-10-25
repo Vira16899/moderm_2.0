@@ -1,5 +1,7 @@
 <script setup>
+import BaseSkeleton from '../base/BaseSkeleton.vue';
 defineProps({
+  loading: Boolean,
   title: String,
   value: [String, Number],
   note: String,
@@ -10,12 +12,12 @@ defineProps({
 });
 </script>
 <template>
-  <div class="metric-card metric-card-static" :class="color">
+  <div class="metric-card metric-card-static" :class="color" :aria-busy="loading">
     <span class="metric-icon"><component :is="icon" :size="21" /></span>
     <span class="metric-info">
       <span>{{ title }}</span>
-      <strong :class="{ 'metric-text-value': textValue }">{{ value }}</strong>
-      <small>{{ note }}</small>
+      <strong :class="{ 'metric-text-value': textValue }"><BaseSkeleton v-if="loading" inline :lines="1" /><template v-else>{{ value }}</template></strong>
+      <small><BaseSkeleton v-if="loading" inline :lines="1" /><template v-else>{{ note }}</template></small>
     </span>
   </div>
 </template>

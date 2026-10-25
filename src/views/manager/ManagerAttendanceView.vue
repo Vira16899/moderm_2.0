@@ -1,119 +1,82 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import { CalendarDays, Users } from "lucide-vue-next";
-import { apiRequest } from "@/api/client";
-import { API_ENDPOINTS } from "@/api/endpoints";
-import AttendanceScan from "@/views/attendance/AttendanceScan.vue";
-
-const records = ref([]);
-const loading = ref(true);
-const error = ref("");
-const selectedDate = ref("");
-
-function unwrapRows(payload) {
-  const value = payload?.data?.data ?? payload?.data ?? payload;
-  if (Array.isArray(value)) return value;
-  for (const key of ["attendance", "records", "employees", "data"]) {
-    if (Array.isArray(value?.[key])) return value[key];
-  }
-  return [];
-}
-
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { Users, Search, LogIn, Clock3 } from 'lucide-vue-next';
+import { apiRequest } from '@/api/client';
+import { API_ENDPOINTS } from '@/api/endpoints';
+import AttendanceScan from '@/views/attendance/AttendanceScan.vue';
+import BaseSkeleton from '@/components/base/BaseSkeleton.vue';
+import BaseTable from '@/components/base/BaseTable.vue';
+import BaseButton from '@/components/base/BaseButton.vue';
+import UserAvatar from '@/components/common/UserAvatar.vue';
+import { departmentAttendanceRows, attendanceTime, attendanceState, attendanceStateLabel } from '@/api/attendancePresentation.js';
+import { employeeError } from '@/utils/employeeMessages.js';
+const props = defineProps({ onRecords: { type: Function, default: () => apiRequest(API_ENDPOINTS.attendance.getDepartment) } });
+const records = ref([]), loading = ref(true), error = ref(''), search = ref(''), status = ref('all');
+let requestVersion = 0;
+onBeforeUnmount(() => { requestVersion++; });
 async function loadAttendance() {
-  loading.value = true;
-  error.value = "";
+  const version = ++requestVersion;
+  loading.value = true; error.value = '';
   try {
-    records.value = unwrapRows(await apiRequest(API_ENDPOINTS.attendance.getDepartment));
-  } catch (cause) {
-    error.value = cause.message || "Unable to load department attendance.";
-  } finally {
-    loading.value = false;
-  }
+    const data = departmentAttendanceRows(await props.onRecords());
+    if (version === requestVersion) records.value = data;
+  } catch(cause) { if (version === requestVersion) error.value = employeeError(cause,'មិនអាចទាញយកវត្តមានក្នុងផ្នែកបានទេ។'); }
+  finally { if (version === requestVersion) loading.value = false; }
 }
-
-onMounted(loadAttendance);
-
-const filteredRecords = computed(() => {
-  if (!selectedDate.value) return records.value;
-  return records.value.filter((record) => {
-    const date = record.attendance_date ?? record.date ?? record.created_at;
-    return date && String(date).slice(0, 10) === selectedDate.value;
-  });
+const filtered = computed(() => {
+  const query = search.value.trim().toLowerCase();
+  return records.value.filter(record => (status.value === 'all' || attendanceState(record) === status.value) && (!query || [record.name,record.nameEn,record.employeeId].some(value => String(value ?? '').toLowerCase().includes(query))));
 });
-
-const presentCount = computed(() => records.value.filter((record) => /present|on.?time|late|វត្តមាន/i.test(String(record.status ?? ""))).length);
-const uniqueEmployees = computed(() => new Set(records.value.map((record) => record.user_id ?? record.employee_id ?? record.employee?.id ?? record.id)).size);
-
-function employeeName(record) {
-  const employee = record.employee ?? record.user ?? record;
-  return employee.khmer_name ?? employee.nameKh ?? employee.Eng_name ?? employee.nameEn ?? employee.name ?? "—";
-}
-function statusClass(record) {
-  const status = String(record.status ?? "").toLowerCase();
-  if (/absent|missing|អវត្តមាន/.test(status)) return "status-absent";
-  if (/leave|ច្បាប់/.test(status)) return "status-leave";
-  if (/late|យឺត/.test(status)) return "status-late";
-  return "status-present";
-}
-function displayDate(record) {
-  const value = record.attendance_date ?? record.date ?? record.created_at;
-  if (!value) return "—";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? String(value).slice(0, 10) : date.toLocaleDateString("en-CA");
-}
+const hasFilters = computed(() => search.value || status.value !== 'all');
+const headcount = computed(() => {
+  const ids = filtered.value.map(record => record.employeeId).filter(value => value != null && String(value).trim());
+  return filtered.value.length && !ids.length ? '—' : new Set(ids.map(String)).size;
+});
+const summary = computed(() => [
+  {label:'បុគ្គលិកក្នុងកំណត់ត្រា',value:headcount.value,icon:Users},
+  {label:'កំណត់ត្រាម៉ោងចូល',value:filtered.value.filter(record => record.checkIn).length,icon:LogIn},
+  {label:'កំណត់ត្រាយឺត',value:filtered.value.filter(record => attendanceState(record) === 'late').length,icon:Clock3},
+]);
+const columns = [{key:'name',label:'បុគ្គលិក',sortable:true},{key:'date',label:'កាលបរិច្ឆេទ',sortable:true},{key:'checkIn',label:'ម៉ោងចូល',sortable:true},{key:'checkOut',label:'ម៉ោងចេញ',sortable:true},{key:'status',label:'ស្ថានភាព',sortable:true}];
+function resetFilters() { search.value = ''; status.value = 'all'; }
+onMounted(loadAttendance);
 </script>
 
 <template>
-  <main class="attendance-page">
-    <AttendanceScan />
-    <div class="attendance-wrap">
-      <header class="attendance-hero">
-        <div>
-          <span class="eyebrow"><CalendarDays :size="15" /> ការគ្រប់គ្រងផ្នែក</span>
-          <h1>វត្តមានក្នុងផ្នែក</h1>
-          <p>មើលកំណត់ត្រាវត្តមានរបស់បុគ្គលិកក្នុងផ្នែករបស់អ្នក</p>
-        </div>
-        <div class="hero-icon"><Users :size="34" /></div>
-      </header>
-
-      <section class="summary-grid" aria-label="Attendance summary">
-        <article class="summary-card"><span class="summary-icon people"><Users :size="19" /></span><div><small>បុគ្គលិក</small><strong>{{ uniqueEmployees }}</strong></div></article>
-        <article class="summary-card"><span class="summary-icon present"><CalendarDays :size="19" /></span><div><small>មានកំណត់ត្រាវត្តមាន</small><strong>{{ presentCount }}</strong></div></article>
+  <div class="manager-attendance-page">
+    <AttendanceScan manager @recorded="loadAttendance" />
+    <section class="department-attendance" aria-labelledby="department-attendance-title">
+      <header class="da-heading"><span class="da-icon"><Users :size="22" /></span><div><h2 id="department-attendance-title">វត្តមានក្នុងផ្នែក</h2><p>តាមដានកំណត់ត្រាចូលចេញរបស់បុគ្គលិកដែលអ្នកគ្រប់គ្រង។</p></div></header>
+      <div class="da-summary" :aria-busy="loading" aria-label="សង្ខេបវត្តមានក្នុងផ្នែក"><div v-for="item in summary" :key="item.label"><component :is="item.icon" :size="18" /><span>{{ item.label }}</span><strong><BaseSkeleton v-if="loading" inline :lines="1" /><template v-else>{{ error ? '—' : item.value }}</template></strong></div></div>
+      <section class="da-panel"><div class="da-toolbar"><label class="da-search"><Search :size="17" /><input v-model="search" type="search" placeholder="ស្វែងរកឈ្មោះបុគ្គលិក…" aria-label="ស្វែងរកវត្តមានបុគ្គលិកក្នុងផ្នែក" /></label><select v-model="status" aria-label="តម្រងស្ថានភាពក្នុងផ្នែក"><option value="all">គ្រប់ស្ថានភាព</option><option value="present">មានវត្តមាន</option><option value="late">យឺត</option><option value="absent">អវត្តមាន</option><option value="leave">ឈប់សម្រាក</option><option value="recorded">បានកត់ត្រា</option></select><BaseButton v-if="hasFilters" variant="ghost" size="sm" @click="resetFilters">សម្អាតតម្រង</BaseButton></div>
+        <BaseTable :columns="columns" :rows="filtered" :loading="loading" :error="error" caption="កំណត់ត្រាវត្តមានក្នុងផ្នែក" :empty-text="hasFilters ? 'មិនមានកំណត់ត្រាត្រូវនឹងតម្រងនេះទេ។' : 'មិនទាន់មានកំណត់ត្រាវត្តមានក្នុងផ្នែកទេ។'" @retry="loadAttendance"><template #cell-name="{row}"><div class="da-employee"><UserAvatar :src="row.avatar" :name="row.nameEn || row.name" :size="32" /><div><strong>{{ row.name || row.nameEn || 'បុគ្គលិក' }}</strong><small v-if="row.name && row.nameEn">{{ row.nameEn }}</small></div></div></template><template #cell-date="{value}"><span class="da-time">{{ value || '—' }}</span></template><template #cell-checkIn="{value}"><span class="da-time" :class="{ 'da-present': value }">{{ attendanceTime(value) }}</span></template><template #cell-checkOut="{value}"><span class="da-time">{{ attendanceTime(value) }}</span></template><template #cell-status="{row}"><span class="da-status" :class="attendanceState(row)">{{ attendanceStateLabel(row) }}</span></template><template #empty-action><BaseButton v-if="hasFilters" variant="outline" @click="resetFilters">សម្អាតតម្រង</BaseButton></template></BaseTable>
       </section>
-
-      <section class="records-panel">
-        <div class="panel-head">
-          <div><h2>កំណត់ត្រាវត្តមាន</h2><p>ទិន្នន័យសម្រាប់ផ្នែកដែលអ្នកគ្រប់គ្រង</p></div>
-          <div class="filters">
-            <label class="date-control"><CalendarDays :size="16" /><input v-model="selectedDate" type="date" aria-label="Filter by date" /></label>
-            
-          </div>
-        </div>
-
-        <div v-if="error" class="state error" role="alert">{{ error }}</div>
-        <div v-else-if="loading" class="state">កំពុងទាញយកទិន្នន័យវត្តមាន…</div>
-        <div v-else-if="!filteredRecords.length" class="state">មិនមានកំណត់ត្រាវត្តមានសម្រាប់កាលបរិច្ឆេទនេះទេ។</div>
-        <div v-else class="table-scroll">
-          <table>
-            <thead><tr><th>បុគ្គលិក</th><th>កាលបរិច្ឆេទ</th><th>ម៉ោងចូល</th><th>ម៉ោងចេញ</th><th>ស្ថានភាព</th></tr></thead>
-            <tbody>
-              <tr v-for="(record, index) in filteredRecords" :key="record.id ?? record.attendance_id ?? index">
-                <td class="employee-name">{{ employeeName(record) }}</td>
-                <td>{{ displayDate(record) }}</td>
-                <td>{{ record.check_in ?? record.checkInTime ?? record.clock_in ?? "—" }}</td>
-                <td>{{ record.check_out ?? record.checkOutTime ?? record.clock_out ?? "—" }}</td>
-                <td><span class="status-pill" :class="statusClass(record)"><i></i>{{ record.status ?? "បានកត់ត្រា" }}</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </div>
-  </main>
+    </section>
+  </div>
 </template>
 
 <style scoped>
-.attendance-page{min-height:100%;padding:24px;background:transparent;color:var(--ink)}.attendance-wrap{max-width:1200px;margin:auto;display:grid;gap:20px}.attendance-hero{position:relative;overflow:hidden;display:flex;justify-content:space-between;align-items:center;padding:28px 32px;border:1px solid #078795;border-radius:18px;background:var(--action-fill);box-shadow:var(--action-shadow)}.eyebrow{display:inline-flex;align-items:center;gap:8px;color:#d6ffff;font-size:12px;font-weight:700}.attendance-hero h1{margin:8px 0 4px;font-size:28px;font-weight:750;color:#fff}.attendance-hero p,.panel-head p{margin:0;color:#d8f7f8;font-size:14px}.hero-icon{display:grid;place-items:center;width:68px;height:68px;border:1px solid #ffffff42;border-radius:18px;color:#fff;background:#ffffff18}.summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.summary-card{display:flex;align-items:center;gap:14px;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:var(--workspace-shadow)}.summary-card small{display:block;color:var(--muted);font-size:12px}.summary-card strong{display:block;margin-top:3px;color:var(--ink);font-size:24px}.summary-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:12px}.people{color:var(--blue);background:var(--soft)}.present{color:#08764f;background:#e8faf3}.records-panel{overflow:hidden;border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:var(--workspace-shadow)}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px;border-bottom:1px solid var(--line)}.panel-head h2{margin:0 0 5px;color:var(--ink);font-size:17px;font-weight:700}.filters{display:flex;align-items:center;gap:9px}.date-control,.refresh-button{display:flex;align-items:center;gap:8px;min-height:38px;padding:0 11px;border:1px solid var(--line);border-radius:9px;color:var(--ink);background:var(--soft)}.date-control svg,.refresh-button{color:var(--blue)}.date-control input{width:130px;border:0;outline:none;color:var(--ink);background:transparent}.refresh-button{cursor:pointer;font-size:13px}.refresh-button:hover{border-color:var(--blue)}.refresh-button:disabled{opacity:.55;cursor:wait}.state{padding:36px 20px;text-align:center;color:var(--muted)}.state.error{color:#a62d42}.table-scroll{overflow:auto}table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}th{padding:12px 18px;background:var(--soft);color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}td{padding:14px 18px;border-top:1px solid var(--line);color:var(--muted);white-space:nowrap}.employee-name{color:var(--ink);font-weight:600}.status-pill{display:inline-flex;align-items:center;gap:7px;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:700}.status-pill i{width:6px;height:6px;border-radius:50%;background:currentColor}.status-present{color:#08764f;background:#e8faf3}.status-late{color:#946200;background:#fff4d6}.status-absent{color:#a62d42;background:#fff0f2}.status-leave{color:#2563a8;background:#e7f2ff}.spinning{animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:640px){.attendance-page{padding:14px}.attendance-hero{padding:22px}.attendance-hero h1{font-size:23px}.hero-icon{width:52px;height:52px}.summary-grid{gap:10px}.summary-card{padding:13px}.panel-head{align-items:flex-start;flex-direction:column}.filters{width:100%}.date-control{flex:1}.date-control input{width:100%}.refresh-button{white-space:nowrap}}
-
-.dark .attendance-page .present{color:#8ce7c4;background:#14362f}.dark .attendance-page .status-present{color:#8ce7c4;background:#14362f}.dark .attendance-page .status-late{color:#fbbf24;background:#4a3412}.dark .attendance-page .status-absent{color:#ffabb8;background:#3e272d}.dark .attendance-page .status-leave{color:#7dd3fc;background:#123b5c}
+.manager-attendance-page { display:grid; gap:32px; min-width:0; }
+.department-attendance { display:grid; gap:18px; border-top:1px solid var(--line); padding-top:28px; }
+.da-heading { display:flex; align-items:center; gap:13px; }
+.da-icon { width:44px; height:44px; flex-shrink:0; display:grid; place-items:center; border-radius:13px; color:var(--blue); background:var(--soft); }
+.da-heading h2 { font-size:21px; font-weight:650; margin-bottom:6px; } .da-heading p { color:var(--muted); font-size:12px; line-height:1.8; }
+.da-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.da-summary>div { display:flex; align-items:center; gap:10px; min-width:0; padding:16px 18px; border:1px solid var(--line); border-radius:13px; background:var(--surface); }
+.da-summary svg { color:var(--blue); flex-shrink:0; } .da-summary span { color:var(--muted); font-size:12px; line-height:1.8; } .da-summary strong { margin-left:auto; font-size:23px; font-weight:700; }
+.da-panel { min-width:0; border:1px solid var(--line); border-radius:18px; background:var(--surface); overflow:hidden; }
+.da-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:18px; }
+.da-search { display:flex; align-items:center; gap:8px; min-height:44px; border:1px solid var(--line); border-radius:10px; padding:0 12px; color:var(--muted); }
+.da-search { flex:1; min-width:180px; max-width:420px; } .da-search input { width:100%; min-width:0; }
+input { border:0; background:transparent; color:var(--ink); font-size:12px; padding:10px 0; }
+.da-toolbar>select { margin-left:auto; }
+select { min-height:44px; padding:8px 10px; border:1px solid var(--line); border-radius:10px; background:var(--surface); color:var(--ink); font-size:12px; }
+.da-search:focus-within,input:focus-visible,select:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+.da-panel :deep(.base-table-panel) { border:0; border-radius:0; box-shadow:none; } .da-panel :deep(.base-table td) { padding:10px 18px; height:60px; }
+.da-employee { display:flex; align-items:center; gap:10px; min-width:170px; } .da-employee>div { display:grid; gap:3px; } .da-employee strong { font-size:13px; font-weight:600; } .da-employee small { font-size:11px; color:var(--muted); }
+.da-time { font-variant-numeric:tabular-nums; white-space:nowrap; font-size:12px; } .da-present { color:#18744f; font-weight:600; }
+.da-status { display:inline-flex; align-items:center; padding:4px 9px; font-size:11px; border-radius:20px; color:var(--muted); background:var(--soft); white-space:nowrap; }
+.da-status.present { color:#18744f; background:#e4f6ec; } .da-status.late { color:#936113; background:#fff5df; } .da-status.absent { color:#a53b50; background:#fff0f2; }
+:global(.dark) .da-present { color:#83dfb4; } :global(.dark) .da-status.present { background:#183b30; color:#83dfb4; } :global(.dark) .da-status.late { background:#3a3020; color:#f5ce80; } :global(.dark) .da-status.absent { background:#422630; color:#f5a5b5; }
+@media(max-width:760px) { .da-summary { grid-template-columns:1fr; gap:10px; } .da-search { max-width:none; flex-basis:100%; } select { flex:1; } .da-toolbar { padding:16px; } .da-heading h2 { font-size:19px; } }
 </style>

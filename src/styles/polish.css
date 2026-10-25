@@ -228,3 +228,20 @@ button.base-button[data-size="lg"] { min-height: 48px; padding: 12px 22px; }
 @media (max-width: 1200px) { .department-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 850px) { .department-detail-columns { grid-template-columns: 1fr; } .department-position-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .department-grid, .department-position-grid { grid-template-columns: 1fr; } .department-detail-actions { width: 100%; justify-content: flex-end; } }
+
+/* Compact desktop navigation keeps icons and profile controls on one centre line. */
+.app-shell .workspace-content { max-width:1600px; min-width:0; }
+@media (min-width:641px) {
+  .app-shell.sidebar-collapsed { grid-template-columns:76px minmax(0,1fr); }
+  .app-shell.sidebar-collapsed .workspace-content { max-width:none; padding:0 12px 16px; }
+  .app-shell.sidebar-collapsed .sidebar-brand { padding:0; justify-content:center; }
+  .app-shell.sidebar-collapsed .sidebar-brand .brand-logo { justify-content:center; }
+  .app-shell.sidebar-collapsed .sidebar-brand .brand-mark { width:42px; height:42px; }
+  .app-shell.sidebar-collapsed .sidebar-nav { padding:12px 10px; scrollbar-width:none; }
+  .app-shell.sidebar-collapsed .sidebar-nav button { width:48px; height:48px; min-height:48px; padding:0; margin:6px auto; justify-content:center; border-radius:14px; }
+  .app-shell.sidebar-collapsed .sidebar-nav button svg { width:21px; height:21px; }
+  .app-shell.sidebar-collapsed .sidebar-user { align-items:center; margin:10px 8px 4px; padding:10px 0; border-radius:16px; }
+  .app-shell.sidebar-collapsed .sidebar-user>button:first-child { width:44px; height:44px; min-height:44px; display:flex; justify-content:center; align-items:center; }
+  .app-shell.sidebar-collapsed .sidebar-user .user-avatar { width:36px !important; height:36px !important; min-width:36px; max-width:36px; opacity:1; visibility:visible; }
+  .app-shell.sidebar-collapsed .sidebar-user .icon-button { width:44px; min-width:44px; height:44px; min-height:44px; }
+}

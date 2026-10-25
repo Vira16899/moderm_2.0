@@ -509,7 +509,7 @@ fieldset.profile-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
 .app-shell .sidebar-user img { width: 40px; height: 40px; aspect-ratio: 1; object-fit: cover; }
 .app-shell .sidebar-nav button span,
 .app-shell .sidebar-brand .brand-logo>div,
-.app-shell .sidebar-user>button:first-child>span {
+.app-shell .sidebar-user>button:first-child>span:not(.user-avatar) {
   max-width: 180px;
   opacity: 1;
   overflow: hidden;
@@ -517,7 +517,7 @@ fieldset.profile-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
 }
 .app-shell.sidebar-collapsed .sidebar-nav button span,
 .app-shell.sidebar-collapsed .sidebar-brand .brand-logo>div,
-.app-shell.sidebar-collapsed .sidebar-user>button:first-child>span {
+.app-shell.sidebar-collapsed .sidebar-user>button:first-child>span:not(.user-avatar) {
   max-width: 0;
   opacity: 0;
   visibility: hidden;
@@ -539,7 +539,7 @@ fieldset.profile-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
   .app-shell { transition: grid-template-columns .35s cubic-bezier(.22, 1, .36, 1); }
   .app-shell .sidebar-nav button span,
   .app-shell .sidebar-brand .brand-logo>div,
-  .app-shell .sidebar-user>button:first-child>span { transition: max-width .3s ease, opacity .2s ease, visibility .3s; }
+  .app-shell .sidebar-user>button:first-child>span:not(.user-avatar) { transition: max-width .3s ease, opacity .2s ease, visibility .3s; }
   .app-shell .sidebar-brand, .app-shell .sidebar-nav,
   .app-shell .sidebar-brand .brand-logo { transition: padding .35s ease, gap .35s ease; }
   @media (max-width: 640px) {

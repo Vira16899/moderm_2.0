@@ -71,6 +71,14 @@ const routes = [
     },
   },
 
+  {
+    path: "/attendanceQrGenerate",
+    alias: "/admin/attendance/qr-generate",
+    name: "attendance-qr-generate",
+    redirect: "/admin/attendance",
+    meta: { requiresAuth: true, role: "ADMIN", title: "បង្កើត QR វត្តមាន" },
+  },
+
   // ==========================================
   // MAIN APPLICATION
   // ==========================================
@@ -136,18 +144,6 @@ const routes = [
         meta: {
           section: "admin_attendance",
           title: "Attendance",
-        },
-      },
-      {
-        path: "admin/attendance/qr-generate",
-        name: "AttendanceQRDisplay",
-        component: () =>
-          import("@/views/admin/attendance/AttendanceQRGenerate.vue"),
-        meta: {
-          section: "admin_attendance",
-          title: "Generate Attendance QR",
-          requiresAuth: true,
-          role: "ADMIN",
         },
       },
       {
@@ -219,6 +215,12 @@ const routes = [
         },
       },
       {
+        path: "manager/salary",
+        name: "manager-salary",
+        component: () => import("@/views/employee/EmployeeSalaryView.vue"),
+        meta: { section: "manager_salary", title: "ប្រវត្តិប្រាក់ខែ" },
+      },
+      {
         path: "manager/profile",
         name: "manager-profile",
         component: () =>
@@ -270,7 +272,7 @@ const routes = [
           import("@/views/employee/EmployeeSalaryView.vue"),
         meta: {
           section: "employee_salary",
-          title: "Salary",
+          title: "ប្រវត្តិប្រាក់ខែ",
         },
       },
       {

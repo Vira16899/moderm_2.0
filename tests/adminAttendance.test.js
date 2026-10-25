@@ -1,6 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { attendanceQrItems, attendanceRecords } from '../src/api/adminAttendance.js';
+import { attendanceQrItems, attendanceRecords, attendanceDateError, attendanceQrForDate } from '../src/api/adminAttendance.js';
+
+test('generation dates reject impossible dates and QR results stay scoped to the selected day', () => {
+  assert.equal(attendanceDateError('2026-10-25'), '');
+  assert.equal(attendanceDateError('2028-02-29'), '');
+  for (const value of ['', '2026-02-29', '2026-04-31', '2026-13-01', 'invalid']) assert.ok(attendanceDateError(value));
+  const payload = { data: [
+    { id: 1, qr_token: 'selected', attendance_date: '2026-10-25', is_active: 1 },
+    { id: 2, qr_token: 'other-date', attendance_date: '2026-10-24', is_active: 1 },
+    { id: 3, qr_token: 'inactive', attendance_date: '2026-10-25', is_active: 0 },
+  ] };
+  assert.deepEqual(attendanceQrForDate(payload, '2026-10-25').map(row => row.id), ['1']);
+  assert.deepEqual(attendanceQrForDate({ data: [] }, '2026-10-25'), []);
+});
 
 test('QR display supports active session arrays and never displays inactive codes', () => {
   const rows = attendanceQrItems({ data: [{ id: 7, is_active: 1, session_type: 'MORNING_CHECK_IN', qr_token: 'sample-token', attendance_date: '2026-10-24', available_from: '07:00' }, { id: 8, is_active: 0, qr_token: 'inactive' }] });

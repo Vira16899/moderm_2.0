@@ -63,6 +63,11 @@ export function getNavigationItems(currentRole) {
             icon: CalendarCheck2
           },
           {
+            id: "manager_salary",
+            labelKh: "ប្រវត្តិប្រាក់ខែ",
+            icon: DollarSign
+          },
+          {
             id: "manager_profile",
             labelKh: "ព័ត៌មានគណនីខ្ញុំ",
             icon: UserIcon
@@ -77,20 +82,21 @@ export function getNavigationItems(currentRole) {
             icon: LayoutDashboard
           },
           {
-            id: "employee_salary",
-            labelKh: "ប្រាក់បៀវត្ស និងចំណូល",
-            icon: DollarSign
-          },
-          {
             id: "employee_leave_request",
             labelKh: "ស្នើសុំច្បាប់ឈប់សម្រាក",
             icon: Calendar
           },
           {
             id: "attendance",
-            labelKh: "វត្តមាន",
+            labelKh: "វត្តមានរបស់ខ្ញុំ",
             icon: CalendarCheck2
           },
+          {
+            id: "employee_salary",
+            labelKh: "ប្រវត្តិប្រាក់ខែ",
+            icon: DollarSign
+          },
+
           {
             id: "employee_profile",
             labelKh: "ព័ត៌មានប្រវត្តិរូប",
