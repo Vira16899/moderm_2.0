@@ -98,3 +98,10 @@ export function attendanceHistory(payload) {
 export function money(value) {
   return value == null || value === '' || !Number.isFinite(Number(value)) ? '—' : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value));
 }
+
+export function currentProfileSalary(payload) {
+  const data = payload?.data?.data ?? payload?.data ?? payload;
+  const profile = data?.user ?? data?.profile ?? data;
+  const value = profile?.salary ?? profile?.base_salary ?? profile?.baseSalary;
+  return value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);
+}

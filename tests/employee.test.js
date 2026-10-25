@@ -122,3 +122,13 @@ test('employee API sends mutation bodies using correct endpoints, including DELE
   assert.equal((await employeeApi.getSalaryHistory()).endpoint.path, '/mySalary/history');
   assert.equal((await employeeApi.getAttendance()).endpoint.path, '/my-attendance');
 });
+
+test('salary summary reads the actual profile salary without inventing history or zero values', async () => {
+  const { currentProfileSalary } = await import('../src/api/employeeData.js');
+  assert.equal(currentProfileSalary({ data: { salary: '11994.98' } }), 11994.98);
+  assert.equal(currentProfileSalary({ data: { user: { base_salary: 0 } } }), 0);
+  assert.equal(currentProfileSalary({ data: { salary: null } }), null);
+  assert.equal(currentProfileSalary({ data: {} }), null);
+  assert.equal(currentProfileSalary({ data: { salary: 'invalid' } }), null);
+  assert.deepEqual(salaryHistory({ data: [] }), []);
+});

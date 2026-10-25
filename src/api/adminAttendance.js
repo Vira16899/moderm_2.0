@@ -44,7 +44,7 @@ export function attendanceRecords(payload) {
     name: row.khmer_name ?? row.employee_name ?? row.nameKh ?? row.name ?? row.user?.khmer_name ?? '',
     nameEn: row.Eng_name ?? row.nameEn ?? row.user?.Eng_name ?? '',
     employeeId: row.user_id ?? row.employee_id ?? row.id_user ?? row.user?.id ?? '',
-    avatar: row.avatar ?? row.profile_image ?? row.user?.profile_image ?? '',
+    avatar: row.avatar ?? row.profile_image ?? row.user?.avatar ?? row.user?.profile_image ?? '',
     department: row.department_name ?? row.departmentKh ?? row.department?.name ?? '',
     date: String(row.attendance_date ?? row.date ?? row.created_at ?? '').slice(0, 10),
     checkIn: row.check_in ?? row.check_in_time ?? row.clock_in ?? row.time_in ?? '',

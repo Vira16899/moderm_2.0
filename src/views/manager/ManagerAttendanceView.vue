@@ -8,9 +8,9 @@ import BaseSkeleton from '@/components/base/BaseSkeleton.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import UserAvatar from '@/components/common/UserAvatar.vue';
-import { departmentAttendanceRows, attendanceTime, attendanceState, attendanceStateLabel } from '@/api/attendancePresentation.js';
+import { departmentAttendanceRows, attendanceTime, attendanceState, attendanceStateLabel, withEmployeeAvatars } from '@/api/attendancePresentation.js';
 import { employeeError } from '@/utils/employeeMessages.js';
-const props = defineProps({ onRecords: { type: Function, default: () => apiRequest(API_ENDPOINTS.attendance.getDepartment) } });
+const props = defineProps({ employees: { type: Array, default: () => [] }, onRecords: { type: Function, default: () => apiRequest(API_ENDPOINTS.attendance.getDepartment) } });
 const records = ref([]), loading = ref(true), error = ref(''), search = ref(''), status = ref('all');
 let requestVersion = 0;
 onBeforeUnmount(() => { requestVersion++; });
@@ -25,7 +25,7 @@ async function loadAttendance() {
 }
 const filtered = computed(() => {
   const query = search.value.trim().toLowerCase();
-  return records.value.filter(record => (status.value === 'all' || attendanceState(record) === status.value) && (!query || [record.name,record.nameEn,record.employeeId].some(value => String(value ?? '').toLowerCase().includes(query))));
+  return withEmployeeAvatars(records.value, props.employees).filter(record => (status.value === 'all' || attendanceState(record) === status.value) && (!query || [record.name,record.nameEn,record.employeeId].some(value => String(value ?? '').toLowerCase().includes(query))));
 });
 const hasFilters = computed(() => search.value || status.value !== 'all');
 const headcount = computed(() => {

@@ -31,3 +31,19 @@ test('department attendance preserves nested employee identity, date and time al
   assert.deepEqual(departmentAttendanceRows({ data: [] }), []);
   assert.throws(() => departmentAttendanceRows({ data: { message: 'Invalid' } }));
 });
+
+test('department attendance uses nested avatars and joins missing images by employee ID', async () => {
+  const { withEmployeeAvatars } = await import('../src/api/attendancePresentation.js');
+  const records = departmentAttendanceRows({ data: [
+    { id: 88, user: { id: 6, avatar: 'uploads/avatars/current.webp' } },
+    { id: 6, user_id: 9 },
+    { id: 9, user_id: 10 },
+  ] });
+  const employees = [{ id: '6', avatar: 'other.webp' }, { id: '9', avatar: 'manager-team.webp' }];
+  const result = withEmployeeAvatars(records, employees);
+  assert.equal(result[0].avatar, 'uploads/avatars/current.webp');
+  assert.equal(result[1].avatar, 'manager-team.webp');
+  assert.equal(result[2].avatar, '');
+  assert.equal(records[1].avatar, '');
+  assert.equal(withEmployeeAvatars(records, [{ id: 9, avatar: 'updated.webp' }])[1].avatar, 'updated.webp');
+});

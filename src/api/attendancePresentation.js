@@ -37,3 +37,12 @@ export function departmentAttendanceRows(payload) {
     checkOut: row.checkOut || rows[index].checkOutTime || rows[index].clockOut || '',
   }));
 }
+
+/** Join by employee ID only; attendance IDs and names are not employee identities. */
+export function withEmployeeAvatars(records, employees) {
+  const profiles = new Map(employees.filter(employee => employee.id != null).map(employee => [String(employee.id), employee]));
+  return records.map(record => {
+    const employee = profiles.get(String(record.employeeId));
+    return { ...record, avatar: record.avatar || employee?.avatar || employee?.profile_image || '' };
+  });
+}

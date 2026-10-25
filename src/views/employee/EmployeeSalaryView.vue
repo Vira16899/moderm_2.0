@@ -1,7 +1,9 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { employeeApi } from '@/api/employeeApi';
-import { dateOnly, money, salaryHistory } from '@/api/employeeData';
+import { apiRequest } from '@/api/client';
+import { API_ENDPOINTS } from '@/api/endpoints';
+import { dateOnly, money, salaryHistory, currentProfileSalary } from '@/api/employeeData';
 import { Wallet, History, CalendarDays, ShieldCheck } from 'lucide-vue-next';
 import BaseSkeleton from '@/components/base/BaseSkeleton.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
@@ -11,7 +13,9 @@ defineOptions({ inheritAttrs: false });
 const rows = ref([]), loading = ref(true), error = ref('');
 let requestVersion = 0;
 onBeforeUnmount(() => { requestVersion++; });
+const profileSalary = ref(null);
 const latest = computed(() => rows.value[0]);
+const balance = computed(() => profileSalary.value ?? latest.value?.salary);
 const dateLabel = value => {
   const date = dateOnly(value);
   return /^\d{4}-\d{2}-\d{2}$/.test(date) && Number.isFinite(Date.parse(date))
@@ -26,7 +30,11 @@ async function load() {
   const version = ++requestVersion;
   loading.value = true; error.value = '';
   try {
-    const result = salaryHistory(await employeeApi.getSalaryHistory());
+    const [history, profile] = await Promise.allSettled([employeeApi.getSalaryHistory(), apiRequest(API_ENDPOINTS.profile.getMe)]);
+    if (version !== requestVersion) return;
+    profileSalary.value = profile.status === 'fulfilled' ? currentProfileSalary(profile.value) : null;
+    if (history.status === 'rejected') throw history.reason;
+    const result = salaryHistory(history.value);
     if (version === requestVersion) rows.value = result;
   } catch (cause) {
     if (version === requestVersion) error.value = employeeError(cause, 'មិនអាចទាញយកប្រវត្តិប្រាក់ខែបានទេ។ សូមព្យាយាមម្ដងទៀត។');
@@ -39,7 +47,7 @@ onMounted(load);
   <div class="salary-page">
     <header class="workspace-page-header page-heading salary-heading"><div><h1>ប្រវត្តិប្រាក់ខែរបស់ខ្ញុំ</h1><p>តាមដានប្រាក់ខែចុងក្រោយ និងកំណត់ត្រាការផ្លាស់ប្ដូររបស់អ្នក។</p></div></header>
     <section class="salary-overview" :aria-busy="loading" aria-label="សង្ខេបប្រាក់ខែ">
-      <div class="salary-balance"><span class="salary-overline"><Wallet :size="18" />ប្រាក់ខែចុងក្រោយ<span class="salary-currency">USD</span></span><strong><BaseSkeleton v-if="loading" inline :lines="1" /><template v-else>{{ error ? '—' : money(latest?.salary) }}</template></strong><p>តាមកំណត់ត្រាចុងក្រោយពីប្រព័ន្ធ</p></div>
+      <div class="salary-balance"><span class="salary-overline"><Wallet :size="18" />{{ profileSalary != null ? 'ប្រាក់ខែបច្ចុប្បន្ន' : 'ប្រាក់ខែចុងក្រោយ' }}<span class="salary-currency">USD</span></span><strong><BaseSkeleton v-if="loading" inline :lines="1" /><template v-else>{{ money(balance) }}</template></strong><p>{{ profileSalary != null ? 'តាមព័ត៌មានគណនីបច្ចុប្បន្នរបស់អ្នក' : 'តាមកំណត់ត្រាចុងក្រោយពីប្រព័ន្ធ' }}</p></div>
       <div class="salary-overview-details">
         <div class="salary-fact"><span class="salary-fact-icon"><CalendarDays :size="19" /></span><div><span>កែប្រែចុងក្រោយ</span><strong><BaseSkeleton v-if="loading" inline :lines="1" /><template v-else>{{ error ? '—' : dateLabel(latest?.date) }}</template></strong></div></div>
         <div class="salary-fact"><span class="salary-fact-icon"><History :size="19" /></span><div><span>កំណត់ត្រាសរុប</span><strong><BaseSkeleton v-if="loading" inline :lines="1" /><template v-else>{{ error ? '—' : rows.length }}<small v-if="!error"> កំណត់ត្រា</small></template></strong></div></div>
