@@ -86,3 +86,11 @@
 .auth-page.dark .text-button,.dark .auth-page .text-button { color:var(--blue); }
 .auth-page.dark .auth-story,.dark .auth-page .auth-story { background:radial-gradient(ellipse at 90% 95%,#235f6655,transparent 65%),linear-gradient(145deg,#15313e,#1b454d); }
 .auth-page.dark .primary-button,.dark .auth-page .primary-button { background:var(--action-fill); color:#102b35; border-color:transparent; }
+
+/* Recorded attendance is a success state, including its label and timestamp. */
+:root .app-shell :is(.pa-slots,.eh-slots) .slot-complete>span,
+:root .app-shell :is(.pa-slots,.eh-slots) .slot-complete>span svg,
+:root .app-shell :is(.pa-slots,.eh-slots) .slot-complete strong { color:#18744f !important; }
+:root.dark .app-shell :is(.pa-slots,.eh-slots) .slot-complete>span,
+:root.dark .app-shell :is(.pa-slots,.eh-slots) .slot-complete>span svg,
+:root.dark .app-shell :is(.pa-slots,.eh-slots) .slot-complete strong { color:#83dfb4 !important; }

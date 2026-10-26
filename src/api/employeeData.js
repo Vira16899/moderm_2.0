@@ -1,3 +1,4 @@
+import { leaveFileError, leaveUploadFile } from './leaveAttachments.js';
 export const leaveTypes = [
   { value: 'ANNUAL', label: 'ច្បាប់ប្រចាំឆ្នាំ' },
   { value: 'SICK', label: 'ច្បាប់ឈឺ' },
@@ -57,19 +58,23 @@ export function leaveErrors(form) {
   if (!validDate(form.endDate)) errors.endDate = 'សូមបញ្ចូលថ្ងៃបញ្ចប់ឱ្យបានត្រឹមត្រូវ។';
   else if (validDate(form.startDate) && form.endDate <= form.startDate) errors.endDate = 'ថ្ងៃបញ្ចប់ត្រូវនៅក្រោយថ្ងៃចាប់ផ្តើមយ៉ាងហោចណាស់ ១ ថ្ងៃ។';
   if (!form.reason?.trim()) errors.reason = 'សូមបញ្ចូលមូលហេតុសុំច្បាប់។';
-  if (leaveUrlError(form.fileUrl)) errors.fileUrl = leaveUrlError(form.fileUrl);
-  else if (leaveDays(form.startDate, form.endDate) > 2 && !form.fileUrl?.trim()) errors.fileUrl = 'ការសុំច្បាប់លើសពី ២ ថ្ងៃ ត្រូវបញ្ចូលតំណឯកសារបញ្ជាក់។';
+  if (leaveFileError(form.file)) errors.file = leaveFileError(form.file);
+  else if (leaveDays(form.startDate, form.endDate) > 2 && !form.file && !form.existingFileUrl) errors.file = 'ការសុំច្បាប់លើសពី ២ ថ្ងៃ ត្រូវភ្ជាប់ឯកសារបញ្ជាក់។';
   return errors;
 }
 export function leaveBody(form) {
   const errors = leaveErrors(form);
   if (Object.keys(errors).length) throw new Error(Object.values(errors)[0]);
-  return {
-    start_date: form.startDate,
-    end_date: form.endDate,
-    reason: form.reason.trim(),
-    file_url: form.fileUrl?.trim() || '',
+  if (!form.file) return {
+    reason: form.reason.trim(), start_date: form.startDate, end_date: form.endDate,
+    ...(!form.existingFileUrl ? { file_url: null } : {}),
   };
+  const body = new FormData();
+  body.append('start_date', form.startDate);
+  body.append('end_date', form.endDate);
+  body.append('reason', form.reason.trim());
+  body.append('file', leaveUploadFile(form.file));
+  return body;
 }
 export function salaryHistory(payload) {
   return employeeList(payload, ['salaryHistory', 'salary_history', 'history', 'records', 'salaries']).map((item, index) => ({

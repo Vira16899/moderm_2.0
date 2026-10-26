@@ -41,9 +41,10 @@ async function loadToday() {
 function openScanner() { if (isSubmitting.value) return; showScanner.value = true; }
 async function handleScanned(qrToken) {
   if (isSubmitting.value) return;
-  showScanner.value = false; isSubmitting.value = true;
+  isSubmitting.value = true;
   try {
     await apiRequest(API_ENDPOINTS.attendance.scan, {body:{qr_token:qrToken}});
+    showScanner.value = false;
     notify('បានកត់ត្រាវត្តមានដោយជោគជ័យ។');
     await loadToday(); emit('recorded');
   } catch(cause) { notify(employeeError(cause,'មិនអាចកត់ត្រាវត្តមានបានទេ។ សូមព្យាយាមម្ដងទៀត។'), 'error'); }
@@ -57,13 +58,13 @@ onMounted(loadToday);
     <header class="workspace-page-header pa-heading"><div><h1>វត្តមានរបស់ខ្ញុំ</h1><p>កត់ត្រាម៉ោងចូលចេញ និងពិនិត្យប្រវត្តិការងាររបស់អ្នក។</p></div><span class="pa-date"><CalendarDays :size="17" />{{ dateLabel(today) }}</span></header>
     <div class="pa-overview">
       <section class="pa-scan"><div class="pa-scan-copy"><span class="pa-scan-icon"><QrCode :size="26" /></span><h2>កត់ត្រាវត្តមានថ្ងៃនេះ</h2><p>ស្កេន QR សកម្មដែលបង្ហាញនៅកន្លែងធ្វើការ ដើម្បីកត់ត្រាម៉ោងចូល ឬម៉ោងចេញ។</p><BaseButton :loading="isSubmitting" :disabled="isSubmitting" @click="openScanner"><ScanLine :size="18" />បើកម៉ាស៊ីនស្កេន QR</BaseButton><small>សូមអនុញ្ញាតឱ្យប្រើកាមេរ៉ា នៅពេលបើកម៉ាស៊ីនស្កេន។</small></div><QrCode class="pa-scan-art" :size="150" :stroke-width="1" aria-hidden="true" /></section>
-      <section class="pa-today" :aria-busy="isLoading" aria-labelledby="personal-today-title"><div class="pa-panel-heading"><div><h2 id="personal-today-title">វត្តមានថ្ងៃនេះ</h2><p>ម៉ោងដែលប្រព័ន្ធបានកត់ត្រា</p></div><span v-if="!isLoading && !errorMessage" class="pa-count">{{ number(recordedSlots) }}/{{ number(slots.length) }}</span></div><BaseSkeleton v-if="isLoading" :lines="2" /><p v-else-if="errorMessage" class="pa-muted">មិនទាន់អាចបង្ហាញវត្តមានបានទេ។</p><div v-else class="pa-slots"><div v-for="slot in slots" :key="slot.key"><span><CheckCircle2 v-if="slot.value" :size="17" /><Clock3 v-else :size="17" />{{ slot.label }}</span><strong :class="{recorded:slot.value}">{{ slot.value ? attendanceTime(slot.value) : 'មិនទាន់កត់ត្រា' }}</strong></div></div></section>
+      <section class="pa-today" :aria-busy="isLoading" aria-labelledby="personal-today-title"><div class="pa-panel-heading"><div><h2 id="personal-today-title">វត្តមានថ្ងៃនេះ</h2><p>ម៉ោងដែលប្រព័ន្ធបានកត់ត្រា</p></div><span v-if="!isLoading && !errorMessage" class="pa-count">{{ number(recordedSlots) }}/{{ number(slots.length) }}</span></div><BaseSkeleton v-if="isLoading" :lines="2" /><p v-else-if="errorMessage" class="pa-muted">មិនទាន់អាចបង្ហាញវត្តមានបានទេ។</p><div v-else class="pa-slots"><div v-for="slot in slots" :key="slot.key" :class="{ 'slot-complete': slot.value }"><span><CheckCircle2 v-if="slot.value" :size="17" /><Clock3 v-else :size="17" />{{ slot.label }}</span><strong :class="{recorded:slot.value}">{{ slot.value ? attendanceTime(slot.value) : 'មិនទាន់កត់ត្រា' }}</strong></div></div></section>
     </div>
     <div class="pa-summary" :aria-busy="isLoading" aria-label="សង្ខេបប្រវត្តិវត្តមាន"><div v-for="item in summary" :key="item.label" class="pa-metric"><span class="pa-metric-icon" :class="item.tone"><component :is="item.icon" :size="20" /></span><div><span>{{ item.label }}</span><strong><BaseSkeleton v-if="isLoading" inline :lines="1" /><template v-else>{{ errorMessage ? '—' : number(item.value) }}</template></strong></div></div></div>
     <section class="pa-history" aria-labelledby="personal-history-title"><div class="pa-toolbar"><div class="pa-panel-heading"><span class="pa-section-icon"><FileText :size="20" /></span><div><h2 id="personal-history-title">ប្រវត្តិវត្តមានរបស់ខ្ញុំ</h2><p>កំណត់ត្រាចូលចេញតាមកាលបរិច្ឆេទ</p></div></div><div class="pa-filters"><select v-model="state" aria-label="តម្រងស្ថានភាពវត្តមានរបស់ខ្ញុំ"><option value="all">គ្រប់ស្ថានភាព</option><option value="present">មានវត្តមាន</option><option value="late">យឺត</option><option value="absent">អវត្តមាន</option><option value="leave">ឈប់សម្រាក</option><option value="recorded">បានកត់ត្រា</option></select><BaseButton v-if="state !== 'all'" variant="ghost" size="sm" @click="state = 'all'">សម្អាតតម្រង</BaseButton></div></div>
       <BaseTable :columns="columns" :rows="filtered" :loading="isLoading" :error="errorMessage" caption="ប្រវត្តិវត្តមានរបស់ខ្ញុំ" :empty-text="state !== 'all' ? 'មិនមានកំណត់ត្រាត្រូវនឹងតម្រងនេះទេ។' : 'មិនទាន់មានប្រវត្តិវត្តមានទេ។'" @retry="loadToday"><template #cell-date="{value}"><span class="pa-table-date"><CalendarDays :size="15" />{{ dateLabel(value) }}</span></template><template #cell-checkInTime="{value}"><span class="pa-time" :class="{recorded:value}">{{ attendanceTime(value) }}</span></template><template #cell-checkOutTime="{value}"><span class="pa-time">{{ attendanceTime(value) }}</span></template><template #cell-status="{row}"><span class="pa-status" :class="attendanceState(row)"><i></i>{{ attendanceStateLabel(row) }}</span></template><template #empty-action><BaseButton v-if="state !== 'all'" variant="outline" @click="state = 'all'">សម្អាតតម្រង</BaseButton></template></BaseTable>
     </section>
-    <AttendanceScanner v-if="showScanner" @scanned="handleScanned" @close="showScanner = false" />
+    <AttendanceScanner v-if="showScanner" :submitting="isSubmitting" @scanned="handleScanned" @close="showScanner = false" />
   </section>
 </template>
 
@@ -126,4 +127,9 @@ input:focus-visible,select:focus-visible { outline:2px solid var(--blue); outlin
 .employee-attendance-page .pa-toolbar { padding:18px 22px; }
 .employee-attendance-page .pa-history :deep(.base-table td) { padding:12px 22px; }
 @media(max-width:760px) { .employee-attendance-page .pa-scan,.employee-attendance-page .pa-today { padding:20px; } .employee-attendance-page .pa-toolbar { padding:16px; } }
+</style>
+
+<style scoped>
+.pa-slots .slot-complete>span,.pa-slots .slot-complete>span svg,.pa-slots .slot-complete strong { color:#18744f !important; }
+.dark .pa-slots .slot-complete>span,.dark .pa-slots .slot-complete>span svg,.dark .pa-slots .slot-complete strong { color:#83dfb4 !important; }
 </style>

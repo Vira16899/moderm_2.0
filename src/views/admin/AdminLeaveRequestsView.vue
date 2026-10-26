@@ -1,12 +1,14 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { CalendarDays, Check, CheckCircle2, Clock3, FileText, Search, Trash2, XCircle, LoaderCircle, ArrowRight, History } from 'lucide-vue-next';
+import { CalendarDays, Check, CheckCircle2, Clock3, FileText, Search, Trash2, XCircle, LoaderCircle, ArrowRight, History, Paperclip, ArrowUpRight } from 'lucide-vue-next';
 import BaseTable from '../../components/base/BaseTable.vue';
 import BaseButton from '../../components/base/BaseButton.vue';
 import BaseModal from '../../components/base/BaseModal.vue';
 import BaseSkeleton from '../../components/base/BaseSkeleton.vue';
 import UserAvatar from '../../components/common/UserAvatar.vue';
 import { notify } from '../../stores/toasts.js';
+import { API_BASE_URL } from '../../auth/index.js';
+import { leaveAttachmentUrl } from '../../api/leaveAttachments.js';
 import { adminErrorMessage } from '../../utils/adminMessages.js';
 import { newestLeaveRequests, splitLeaveRequests } from '../../api/leaveRequestHistory.js';
 const props = defineProps({ onList: Function, onGetById: Function, onApprove: Function, onReject: Function, onDelete: Function });
@@ -90,6 +92,7 @@ async function refresh() {
  finally { if (version === listVersion) loading.value = false; }
 }
 const currentDetail = computed(() => detail.value || selectedRequest.value);
+const detailAttachment = computed(() => leaveAttachmentUrl(currentDetail.value?.file_url ?? currentDetail.value?.fileUrl, API_BASE_URL));
 const previousRequests = computed(() => newestLeaveRequests(userHistory.value.filter(row => row.id !== selectedRequest.value?.id)));
 const historyColumns = columns.filter(column => !['employeeNameKh', 'actions'].includes(column.key));
 async function loadDetail(request) {
@@ -121,6 +124,9 @@ async function loadDetail(request) {
      endDate: match.endDate ?? match.end_date ?? request.endDate,
      leaveType: match.leaveType ?? match.leave_type ?? request.leaveType,
      reason: match.reason ?? match.description ?? request.reason,
+     employeeNameKh: match.khmer_name ?? match.employeeNameKh ?? request.employeeNameKh,
+     employeeNameEn: match.Eng_name ?? match.employeeNameEn ?? request.employeeNameEn,
+     avatar: match.avatar ?? match.profile_image ?? request.avatar,
    });
  } catch(cause) { if (version === detailVersion) detailError.value = adminErrorMessage(cause); }
  finally { if (version === detailVersion) detailLoading.value = false; }
@@ -162,13 +168,14 @@ onMounted(refresh);
    </BaseTable>
   </section>
   <BaseModal v-if="selectedRequest" model-value title="ព័ត៌មានសំណើសុំច្បាប់" show-header size="lg" :busy="!!busyId" @close="closeDetail">
-   <div class="leave-detail-person"><UserAvatar :name="selectedRequest.employeeNameEn || selectedRequest.employeeNameKh" :size="44"/><div><h3>{{ selectedRequest.employeeNameKh || selectedRequest.employeeNameEn || 'បុគ្គលិក ' + selectedRequest.employeeId }}</h3><p>{{ selectedRequest.employeeNameEn }}</p></div><span class="leave-status" :class="currentDetail.status">{{ statusLabel(selectedRequest.status) }}</span></div>
+   <div class="leave-detail-person"><UserAvatar :src="currentDetail.avatar || currentDetail.profile_image" :name="currentDetail.employeeNameEn || currentDetail.employeeNameKh" :size="44"/><div><h3>{{ currentDetail.employeeNameKh || currentDetail.employeeNameEn || 'បុគ្គលិក ' + currentDetail.employeeId }}</h3><p>{{ currentDetail.employeeNameEn }}</p></div><span class="leave-status" :class="currentDetail.status">{{ statusLabel(currentDetail.status) }}</span></div>
    <BaseSkeleton v-if="detailLoading" :lines="3"/>
    <div v-if="detailError" class="form-error" role="alert">{{ detailError }} <BaseButton variant="ghost" @click="loadDetail(selectedRequest)">ព្យាយាមម្ដងទៀត</BaseButton></div>
-   <dl class="leave-detail-grid"><div><dt>ប្រភេទច្បាប់</dt><dd>{{ leaveLabel(currentDetail.leaveType) }}</dd></div><div><dt>ចាប់ពី</dt><dd>{{ formatDate(currentDetail.startDate) }}</dd></div><div><dt>ដល់</dt><dd>{{ formatDate(currentDetail.endDate) }}</dd></div><div class="leave-reason"><dt>មូលហេតុ</dt><dd>{{ currentDetail.reason || 'មិនបានបញ្ជាក់មូលហេតុ។' }}</dd></div></dl>
+   <dl class="leave-detail-grid"><div><dt>ចាប់ពី</dt><dd>{{ formatDate(currentDetail.startDate) }}</dd></div><div><dt>ដល់</dt><dd>{{ formatDate(currentDetail.endDate) }}</dd></div><div class="leave-reason"><dt>មូលហេតុ</dt><dd>{{ currentDetail.reason || 'មិនបានបញ្ជាក់មូលហេតុ។' }}</dd></div></dl>
 
+   <section v-if="detailAttachment" class="leave-attachment-section" aria-label="ឯកសារភ្ជាប់"><h3>ឯកសារ</h3><a class="leave-detail-attachment" :href="detailAttachment" target="_blank" rel="noopener noreferrer"><span class="leave-file-icon"><Paperclip :size="18" aria-hidden="true"/></span><span>មើលឯកសារភ្ជាប់</span><ArrowUpRight :size="17" aria-hidden="true"/></a></section>
    <section class="leave-user-history" aria-labelledby="leave-user-history-title"><h3 id="leave-user-history-title"><History :size="18"/>ប្រវត្តិសំណើរបស់បុគ្គលិក</h3><BaseTable :columns="historyColumns" :rows="previousRequests" :loading="detailLoading" row-clickable :row-label="row => 'មើលសំណើ ' + row.id" caption="ប្រវត្តិសំណើរបស់បុគ្គលិក" empty-text="មិនមានសំណើមុនផ្សេងទៀតទេ។" @row-click="loadDetail"><template #cell-startDate="{row}"><div class="leave-dates"><span>{{ formatDate(row.startDate) }}</span><small><ArrowRight :size="12"/>{{ formatDate(row.endDate) }}</small></div></template><template #cell-createdAt="{value}">{{ formatDate(value) }}</template><template #cell-status="{value}"><span class="leave-status" :class="value">{{ statusLabel(value) }}</span></template></BaseTable></section>
-   <template #footer><BaseButton variant="outline" @click="closeDetail" :disabled="!!busyId">បិទ</BaseButton><BaseButton v-if="onReject && selectedRequest.status === 'pending'" variant="outline" :disabled="!!busyId" @click="requestAction(selectedRequest,'reject')"><XCircle :size="16"/>បដិសេធ</BaseButton><BaseButton v-if="onApprove && selectedRequest.status === 'pending'" :loading="busyId === selectedRequest.id" @click="mutate(selectedRequest,'approve')"><Check :size="16"/>អនុម័តសំណើ</BaseButton></template>
+   <template #footer><BaseButton v-if="onReject && currentDetail.status === 'pending'" variant="outline" :disabled="!!busyId" @click="requestAction(selectedRequest,'reject')"><XCircle :size="16"/>បដិសេធ</BaseButton><BaseButton v-if="onApprove && currentDetail.status === 'pending'" :loading="busyId === selectedRequest.id" @click="mutate(selectedRequest,'approve')"><Check :size="16"/>អនុម័តសំណើ</BaseButton></template>
   </BaseModal>
   <BaseModal v-if="confirmation" model-value :title="confirmation.action === 'delete' ? 'លុបសំណើសុំច្បាប់?' : 'បដិសេធសំណើសុំច្បាប់?'" show-header size="sm" :busy="!!busyId" @close="confirmation = null"><p class="leave-confirm-copy">{{ confirmation.action === 'delete' ? 'តើអ្នកចង់លុបសំណើសុំច្បាប់នេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់ក្រោយបានទេ។' : 'តើអ្នកចង់បដិសេធសំណើសុំច្បាប់នេះមែនទេ?' }}</p><p class="leave-confirm-name">{{ confirmation.request.employeeNameKh || confirmation.request.employeeNameEn }}</p><template #footer><BaseButton variant="outline" :disabled="!!busyId" @click="confirmation = null">បោះបង់</BaseButton><BaseButton variant="danger" :loading="!!busyId" @click="mutate(confirmation.request, confirmation.action)">{{ confirmation.action === 'delete' ? 'លុបសំណើ' : 'បដិសេធសំណើ' }}</BaseButton></template></BaseModal>
  </section>
@@ -242,4 +249,14 @@ onMounted(refresh);
 .dark .rejected .summary-icon,.dark .leave-status.rejected,.dark .leave-status.cancelled { background:#422630; color:#f5a5b5; }
 @media(max-width:1100px) { .leave-toolbar { align-items:flex-start; flex-direction:column; } .leave-toolbar-controls { width:100%; justify-content:flex-start; } .leave-search { flex:1; width:auto; } .leave-summary-card { gap:10px; padding:16px; } }
 @media(max-width:640px) { .leave-page { gap:18px; } .leave-page-heading { align-items:flex-start; flex-direction:column; gap:12px; } .leave-page-heading p { font-size:13px; } .leave-summary { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .leave-summary-card { padding:14px 12px; gap:10px; border-radius:14px; } .summary-icon { width:36px; height:36px; border-radius:10px; } .summary-copy>span:first-child { font-size:11px; } .summary-copy strong { font-size:23px; } .leave-toolbar { padding:16px; gap:14px; } .leave-toolbar-controls { gap:10px; } .leave-search { width:100%; flex-basis:100%; } .leave-toolbar select { flex:1; } .leave-detail-person .leave-status { margin-left:58px; } }
+</style>
+
+<style scoped>
+.leave-attachment-section { margin:22px 0 26px; }
+.leave-attachment-section h3 { margin:0 0 10px; color:var(--muted); font-size:13px; font-weight:500; }
+.leave-detail-attachment { display:flex; align-items:center; gap:12px; min-height:58px; padding:10px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--blue); font-size:13px; transition:background-color 150ms,border-color 150ms; }
+.leave-detail-attachment:hover { background:var(--soft); border-color:var(--blue); }
+.leave-detail-attachment .leave-file-icon { display:grid; place-items:center; flex:0 0 34px; height:34px; background:var(--soft); border-radius:9px; }
+.leave-detail-attachment>span { flex:1; }
+.leave-detail-attachment:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
 </style>

@@ -1,12 +1,14 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { employeeApi } from '@/api/employeeApi';
+import { API_BASE_URL } from '@/auth/index.js';
+import { leaveAttachmentUrl, leaveFileError } from '@/api/leaveAttachments.js';
 import { leaveBody, leaveErrors, leaveDays, nextLeaveDate, leaveHistory, localToday, statusLabels } from '@/api/employeeData';
 import BaseModal from '@/components/base/BaseModal.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
 import BaseButton from '@/components/base/BaseButton.vue';
 import BaseSkeleton from '@/components/base/BaseSkeleton.vue';
-import { Plus, CalendarDays, X, Send, Pencil, TriangleAlert, Search, Clock3, CheckCircle2, XCircle, FileText, ArrowUpRight, Paperclip, Ban } from 'lucide-vue-next';
+import { Plus, CalendarDays, X, Send, Pencil, Upload, Search, Clock3, CheckCircle2, XCircle, FileText, ArrowUpRight, Paperclip, Ban } from 'lucide-vue-next';
 import { notify } from '@/stores/toasts';
 import { employeeError } from '@/utils/employeeMessages';
 defineOptions({ inheritAttrs: false });
@@ -28,15 +30,17 @@ const formatDate = value => {
   const date = new Date(`${value.slice(0, 10)}T00:00:00`);
   return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat('km-KH', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
 };
-const safeFileUrl = value => /^https?:\/\//i.test(String(value ?? '')) ? value : null;
+const safeFileUrl = value => leaveAttachmentUrl(value, API_BASE_URL);
 const summaries = computed(() => [
   { value: 'all', label: 'សំណើសរុប', icon: FileText, count: rows.value.length, color: 'teal' },
   { value: 'pending', label: 'កំពុងរង់ចាំ', icon: Clock3, count: rows.value.filter(row => row.status === 'pending').length, color: 'amber' },
   { value: 'approved', label: 'បានអនុម័ត', icon: CheckCircle2, count: rows.value.filter(row => row.status === 'approved').length, color: 'green' },
   { value: 'rejected', label: 'បានបដិសេធ', icon: XCircle, count: rows.value.filter(row => row.status === 'rejected').length, color: 'rose' },
 ]);
-const form = reactive({ startDate: '', endDate: '', reason: '', fileUrl: '' });
+const form = reactive({ startDate: '', endDate: '', reason: '', file: null, existingFileUrl: '' });
 const fieldErrors = ref({});
+const fileInput = ref(null);
+function clearUpload() { form.file = null; fieldErrors.value.file = ''; if (fileInput.value) fileInput.value.value = ''; }
 const visibleRows = computed(() => {
   const query = props.manager ? '' : search.value.trim().toLowerCase();
   return rows.value.filter(row => (filter.value === 'all' || row.status === filter.value)
@@ -45,6 +49,8 @@ const visibleRows = computed(() => {
 });
 const days = computed(() => leaveDays(form.startDate, form.endDate));
 const attachmentRequired = computed(() => days.value > 2);
+const attachmentDisabled = computed(() => days.value <= 1);
+watch(attachmentDisabled, disabled => { if (disabled) clearUpload(); });
 const columns = [
   { key: 'reason', label: 'សំណើសុំច្បាប់' },
   { key: 'startDate', label: 'រយៈពេលសុំច្បាប់', sortable: true },
@@ -52,9 +58,17 @@ const columns = [
   { key: 'status', label: 'ស្ថានភាព', sortable: true },
   { key: 'actions', label: 'សកម្មភាព', align: 'right' },
 ];
-watch([() => form.startDate, () => form.endDate, () => form.fileUrl], () => {
-  if ('fileUrl' in fieldErrors.value) fieldErrors.value = { ...fieldErrors.value, fileUrl: leaveErrors(form).fileUrl || '' };
+watch([() => form.startDate, () => form.endDate, () => form.file], () => {
+  if ('file' in fieldErrors.value) fieldErrors.value = { ...fieldErrors.value, file: leaveErrors(form).file || '' };
 });
+function chooseFile(event) {
+  if (attachmentDisabled.value) { clearUpload(); return; }
+  const file = event.target.files?.[0] || null;
+  const message = leaveFileError(file);
+  form.file = file;
+  fieldErrors.value = { ...fieldErrors.value, file: message };
+
+}
 const canChange = row => row.id != null && row.status === 'pending';
 
 async function load() {
@@ -68,7 +82,7 @@ async function load() {
 function openForm(row = null) {
   editing.value = row;
   fieldErrors.value = {};
-  Object.assign(form, row ? { startDate: row.startDate, endDate: row.endDate, reason: row.reason, fileUrl: row.fileUrl } : { startDate: localToday(), endDate: nextLeaveDate(localToday()), reason: '', fileUrl: '' });
+  Object.assign(form, row ? { startDate: row.startDate, endDate: row.endDate, reason: row.reason, file: null, existingFileUrl: safeFileUrl(row.fileUrl) } : { startDate: localToday(), endDate: nextLeaveDate(localToday()), reason: '', file: null, existingFileUrl: '' });
   formOpen.value = true;
 }
 async function submit() {
@@ -80,7 +94,7 @@ async function submit() {
     busy.value = true;
     if (editing.value) await employeeApi.updateLeave(editing.value.id, body);
     else await employeeApi.createLeave(body);
-    formOpen.value = false;
+    formOpen.value = false; form.file = null;
     notify(editing.value ? 'បានកែប្រែសំណើដោយជោគជ័យ។' : 'បានដាក់សំណើដោយជោគជ័យ។');
     await load();
   } catch (cause) { notify(employeeError(cause, 'មិនអាចរក្សាទុកសំណើបានទេ។ សូមព្យាយាមម្ដងទៀត។'), 'error'); }
@@ -126,7 +140,7 @@ onMounted(load);
     <p class="el-help"><Clock3 :size="15" /> អ្នកអាចកែប្រែ ឬលុបចោលសំណើដែលកំពុងរង់ចាំការអនុម័ត។</p>
     <BaseModal :model-value="Boolean(selected)" class="account-action-modal employee-action-modal el-detail-modal" title="ព័ត៌មានសំណើសុំច្បាប់" @update:model-value="value => { if (!value) selected = null; }">
       <div v-if="selected" class="ess-dialog">
-        <div class="account-dialog-heading"><span class="profile-section-icon"><FileText :size="22" /></span><div><h2>ព័ត៌មានសំណើសុំច្បាប់</h2><p>សំណើ #{{ selected.id ?? '—' }} · {{ formatDate(selected.appliedDate) }}</p></div><button class="icon-button" aria-label="បិទព័ត៌មាន" @click="selected = null"><X :size="20" /></button></div>
+        <div class="account-dialog-heading"><span class="profile-section-icon"><FileText :size="22" /></span><div><h2>ព័ត៌មានសំណើសុំច្បាប់</h2><p>សំណើ #{{ selected.id ?? '—' }} · {{ formatDate(selected.appliedDate) }}</p></div><button class="icon-button el-close" aria-label="បិទព័ត៌មាន" @click="selected = null"><X :size="20" /></button></div>
         <div class="el-detail-overview"><strong>សំណើសុំច្បាប់</strong><span class="ess-status el-status" :class="selected.status"><i></i>{{ statusLabels[selected.status] || selected.status || '—' }}</span></div>
         <div class="el-detail-dates"><div><small>ថ្ងៃចាប់ផ្តើម</small><strong>{{ formatDate(selected.startDate) }}</strong></div><div><small>ថ្ងៃបញ្ចប់</small><strong>{{ formatDate(selected.endDate) }}</strong></div><div><small>ចំនួនថ្ងៃ</small><strong>{{ number(leaveDays(selected.startDate, selected.endDate)) }} ថ្ងៃ</strong></div></div>
         <div class="el-detail-text"><h3>មូលហេតុសុំច្បាប់</h3><p>{{ selected.reason || '—' }}</p></div>
@@ -137,19 +151,20 @@ onMounted(load);
     </BaseModal>
     <BaseModal v-model="formOpen" class="account-action-modal employee-action-modal" :title="editing ? 'កែប្រែសំណើ' : 'ដាក់ពាក្យសុំច្បាប់ថ្មី'" :busy="busy" :close-on-backdrop="!busy" :close-on-escape="!busy">
       <div class="ess-dialog">
-        <div class="account-dialog-heading"><span class="profile-section-icon"><component :is="editing ? Pencil : CalendarDays" :size="22" /></span><div><h2>{{ editing ? 'កែប្រែសំណើសុំច្បាប់' : 'ដាក់ពាក្យសុំច្បាប់ថ្មី' }}</h2><p>បំពេញព័ត៌មានសម្រាប់ការស្នើសុំច្បាប់របស់អ្នក</p></div><button class="icon-button" aria-label="បិទ" :disabled="busy" @click="formOpen = false"><X :size="20" /></button></div>
+        <div class="account-dialog-heading"><span class="profile-section-icon"><component :is="editing ? Pencil : CalendarDays" :size="22" /></span><div><h2>{{ editing ? 'កែប្រែសំណើសុំច្បាប់' : 'ដាក់ពាក្យសុំច្បាប់ថ្មី' }}</h2><p>បំពេញព័ត៌មានសម្រាប់ការស្នើសុំច្បាប់របស់អ្នក</p></div><button class="icon-button el-close" aria-label="បិទ" :disabled="busy" @click="formOpen = false"><X :size="20" /></button></div>
         <form class="ess-form" novalidate :aria-busy="busy" @submit.prevent="submit"><fieldset :disabled="busy">
 
           <div class="ess-grid"><label>ថ្ងៃចាប់ផ្តើម<input v-model="form.startDate" type="date" required :aria-invalid="Boolean(fieldErrors.startDate)" /><small v-if="fieldErrors.startDate" class="el-field-error" role="alert">{{ fieldErrors.startDate }}</small></label><label>ថ្ងៃបញ្ចប់<input v-model="form.endDate" type="date" :min="nextLeaveDate(form.startDate)" required :aria-invalid="Boolean(fieldErrors.endDate)" /><small v-if="fieldErrors.endDate" class="el-field-error" role="alert">{{ fieldErrors.endDate }}</small></label></div>
           <p class="employee-days" aria-live="polite"><CalendarDays :size="18" /><span>រយៈពេលឈប់សម្រាក <strong>{{ number(days) }} ថ្ងៃ</strong></span></p>
           <label>មូលហេតុ<textarea v-model="form.reason" placeholder="សូមពណ៌នាមូលហេតុដែលអ្នកចង់សុំច្បាប់…" required :aria-invalid="Boolean(fieldErrors.reason)" /><small v-if="fieldErrors.reason" class="el-field-error" role="alert">{{ fieldErrors.reason }}</small></label>
-          <label class="el-url-label">តំណឯកសារបញ្ជាក់ {{ attachmentRequired ? '(ត្រូវការ)' : '(មិនចាំបាច់)' }}<input v-model="form.fileUrl" type="url" inputmode="url" placeholder="https://example.com/document.pdf" :required="attachmentRequired" :aria-required="attachmentRequired" :aria-invalid="Boolean(fieldErrors.fileUrl)" aria-describedby="leave-url-help leave-url-error" /><small id="leave-url-help">បញ្ចូលតំណរូបភាព ឬឯកសារបញ្ជាក់។ ការសុំច្បាប់លើសពី ២ ថ្ងៃ ត្រូវបញ្ចូលតំណឯកសារ។</small><small v-if="fieldErrors.fileUrl" id="leave-url-error" class="el-field-error" role="alert">{{ fieldErrors.fileUrl }}</small></label>
-          <a v-if="safeFileUrl(form.fileUrl) && !fieldErrors.fileUrl" class="el-detail-file" :href="safeFileUrl(form.fileUrl.trim())" target="_blank" rel="noopener noreferrer"><Paperclip :size="18" /><span>មើលឯកសារតាមតំណ</span><ArrowUpRight :size="17" /></a>
-        </fieldset><div class="profile-form-actions"><button type="button" class="profile-secondary" :disabled="busy" @click="formOpen = false">បោះបង់</button><button class="small-primary" :disabled="busy"><Send :size="16" />{{ busy ? 'កំពុងរក្សាទុក…' : 'រក្សាទុកសំណើ' }}</button></div></form>
+          <div class="el-upload-label"><label for="leave-attachment-input">ឯកសារបញ្ជាក់ <span>{{ attachmentDisabled ? '(មិនត្រូវការសម្រាប់ ១ ថ្ងៃ)' : attachmentRequired ? '(ត្រូវការ)' : '(មិនចាំបាច់)' }}</span></label><div class="el-upload-control" :class="{'is-disabled':attachmentDisabled}"><span class="el-upload-icon"><Upload :size="20" aria-hidden="true"/></span><div><strong>{{ attachmentDisabled ? 'មិនត្រូវការឯកសារភ្ជាប់' : 'ភ្ជាប់ឯកសារបញ្ជាក់' }}</strong><small>រូបភាព · PDF · DOC · DOCX · មិនលើសពី ១០ MB</small></div><BaseButton variant="outline" size="sm" :disabled="attachmentDisabled || busy" @click="fileInput?.click()">{{ form.file ? 'ប្ដូរឯកសារ' : 'ជ្រើសរើសឯកសារ' }}</BaseButton></div><input id="leave-attachment-input" :key="`${editing?.id || 'new'}-${formOpen}`" ref="fileInput" class="sr-only" type="file" :disabled="attachmentDisabled || busy" accept="image/*,.pdf,.doc,.docx" :required="attachmentRequired && !form.existingFileUrl" :aria-required="attachmentRequired && !form.existingFileUrl" :aria-invalid="Boolean(fieldErrors.file)" aria-describedby="leave-file-help leave-file-error" @change="chooseFile" /><small id="leave-file-help">{{ attachmentDisabled ? 'សំណើសុំច្បាប់ ១ ថ្ងៃ មិនត្រូវការភ្ជាប់ឯកសារទេ។' : 'ការសុំច្បាប់លើសពី ២ ថ្ងៃ ត្រូវភ្ជាប់ឯកសារបញ្ជាក់។' }}</small><small v-if="fieldErrors.file" id="leave-file-error" class="el-field-error" role="alert">{{ fieldErrors.file }}</small></div>
+          <div v-if="form.file" class="el-upload-selected"><Paperclip :size="17" /><span>{{ form.file.name }}</span><BaseButton variant="ghost" size="sm" type="button" @click="clearUpload">ដកចេញ</BaseButton></div>
+          <a v-if="form.existingFileUrl && !form.file" class="el-detail-file" :href="form.existingFileUrl" target="_blank" rel="noopener noreferrer"><Paperclip :size="18" /><span>មើលឯកសារដែលបានភ្ជាប់រួច</span><ArrowUpRight :size="17" /></a>
+        </fieldset><div class="profile-form-actions"><button type="button" class="profile-secondary" :disabled="busy" @click="formOpen = false">បោះបង់</button><BaseButton type="submit" :loading="busy" loading-label="កំពុងរក្សាទុកសំណើ…"><Send :size="16" />រក្សាទុកសំណើ</BaseButton></div></form>
       </div>
     </BaseModal>
-    <BaseModal :model-value="Boolean(cancelling)" class="account-action-modal employee-action-modal employee-cancel-modal" title="បញ្ជាក់ការលុបចោលសំណើ" :busy="busy" :close-on-backdrop="!busy" :close-on-escape="!busy" @update:model-value="value => { if (!value) cancelling = null; }">
-      <div class="ess-dialog"><div class="account-dialog-heading"><span class="profile-section-icon employee-warning-icon"><TriangleAlert :size="22" /></span><div><h2>បញ្ជាក់ការលុបចោលសំណើ</h2><p>សូមពិនិត្យសំណើមុនពេលបញ្ជាក់</p></div><button class="icon-button" aria-label="បិទ" :disabled="busy" @click="cancelling = null"><X :size="20" /></button></div><div class="employee-cancel-summary"><strong>{{ cancelling?.reason || 'សំណើសុំច្បាប់' }}</strong><p>{{ cancelling?.startDate }} → {{ cancelling?.endDate }}</p></div><p>តើអ្នកចង់លុបចោលសំណើនេះមែនទេ?</p><p class="ess-muted">អ្នកអាចដាក់សំណើថ្មីនៅពេលក្រោយ។</p><div class="profile-form-actions"><button class="profile-secondary" :disabled="busy" @click="cancelling = null">រក្សាសំណើ</button><button class="ess-button ess-danger" :disabled="busy" @click="cancel">{{ busy ? 'កំពុងលុបចោល…' : 'បញ្ជាក់ការលុបចោល' }}</button></div></div>
+    <BaseModal :model-value="Boolean(cancelling)" class="account-action-modal employee-action-modal employee-cancel-modal" title="លុបចោលសំណើសុំច្បាប់?" :busy="busy" :close-on-backdrop="!busy" :close-on-escape="!busy" @update:model-value="value => { if (!value) cancelling = null; }">
+      <div class="ess-dialog el-cancel-dialog"><div class="el-cancel-heading"><span class="el-cancel-icon"><Ban :size="22" aria-hidden="true" /></span><div><h2>លុបចោលសំណើសុំច្បាប់?</h2><p>សូមពិនិត្យសំណើមុនពេលបញ្ជាក់</p></div><button type="button" class="icon-button el-close" aria-label="បិទ" :disabled="busy" @click="cancelling = null"><X :size="19" /></button></div><div class="employee-cancel-summary"><strong>{{ cancelling?.reason || 'សំណើសុំច្បាប់' }}</strong><div class="el-cancel-period"><CalendarDays :size="16" aria-hidden="true"/><span>{{ formatDate(cancelling?.startDate) }} <span aria-hidden="true">→</span> {{ formatDate(cancelling?.endDate) }}</span><small>{{ number(leaveDays(cancelling?.startDate,cancelling?.endDate)) }} ថ្ងៃ</small></div></div><p class="el-cancel-note">សំណើនេះនឹងត្រូវបានលុបចោល។ អ្នកអាចដាក់សំណើថ្មីនៅពេលក្រោយ។</p><div class="profile-form-actions"><BaseButton variant="outline" :disabled="busy" @click="cancelling = null">រក្សាសំណើ</BaseButton><BaseButton variant="danger" :loading="busy" loading-label="កំពុងលុបចោលសំណើ…" @click="cancel"><Ban :size="16" aria-hidden="true"/>លុបចោលសំណើ</BaseButton></div></div>
     </BaseModal>
   </div>
 </template>
@@ -282,4 +297,46 @@ onMounted(load);
   .el-pagination { padding: 14px 16px; } .el-help { align-items: flex-start; text-align: center; font-size: 11px; } .el-help svg { flex-shrink: 0; margin-top: 3px; }
 }
 @media (max-width: 420px) { .el-summary-card { gap: 8px; padding: 12px; } .el-summary-icon { width: 34px; height: 34px; border-radius: 10px; } .el-summary-card>div>span { font-size: 10px; } .el-filters { flex-direction: column; align-items: stretch; } .el-pagination { flex-wrap: wrap; } .el-detail-dates { grid-template-columns: 1fr; } }
+</style>
+
+<style scoped>
+.el-upload-selected { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; color:var(--ink); }
+.el-upload-selected>span { flex:1; overflow-wrap:anywhere; min-width:0; font-size:13px; }
+.el-upload-label input::file-selector-button { border:0; border-radius:7px; padding:8px 10px; margin-right:12px; background:var(--soft); color:var(--blue); cursor:pointer; }
+</style>
+
+<style scoped>
+.el-upload-label input:disabled { opacity:.55; cursor:not-allowed; }
+.el-upload-label input:disabled::file-selector-button { cursor:not-allowed; }
+</style>
+
+<style scoped>
+.el-cancel-dialog { display:grid; gap:22px; }
+.el-cancel-heading { display:flex; align-items:center; gap:12px; }
+.el-cancel-heading>div { flex:1; min-width:0; }
+.el-cancel-heading h2 { margin:0 0 5px; font-size:19px; line-height:1.6; }
+.el-cancel-heading p { color:var(--muted); font-size:12px; line-height:1.8; }
+.el-cancel-icon { display:grid; place-items:center; width:44px; height:44px; border-radius:12px; flex-shrink:0; color:#be3455; background:#fff0f3; }
+.el-close { width:40px; height:40px; padding:0; display:grid; place-items:center; flex-shrink:0; border-radius:10px; color:var(--muted); background:transparent; }
+.el-close:hover:not(:disabled) { color:var(--ink); background:var(--soft); }
+.el-cancel-dialog .employee-cancel-summary { margin:0; padding:18px; border:1px solid var(--line); border-radius:12px; background:var(--surface-input,var(--soft)); }
+.el-cancel-dialog .employee-cancel-summary>strong { display:block; font-size:15px; line-height:1.8; overflow-wrap:anywhere; }
+.el-cancel-period { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:10px; color:var(--muted); font-size:12px; }
+.el-cancel-period>svg { color:var(--blue); flex-shrink:0; }
+.el-cancel-period>small { margin-left:auto; padding:3px 8px; border-radius:6px; background:var(--soft); color:var(--blue); }
+.el-cancel-note { margin:0; color:var(--muted); font-size:13px; line-height:1.9; }
+.el-cancel-dialog .profile-form-actions { margin:0; padding-top:18px; }
+.el-upload-label>label { display:block; margin-bottom:10px; font-size:13px; }
+.el-upload-label>label>span { color:var(--muted); font-weight:400; }
+.el-upload-control { display:flex; align-items:center; gap:12px; padding:14px; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
+.el-upload-control>div { display:grid; gap:5px; flex:1; min-width:0; }
+.el-upload-control strong { font-size:13px; }
+.el-upload-control small { font-size:11px; line-height:1.8; color:var(--muted); }
+.el-upload-control.is-disabled { opacity:.55; }
+.el-upload-icon { display:grid; place-items:center; width:38px; height:38px; border-radius:10px; background:var(--soft); color:var(--blue); flex-shrink:0; }
+.el-upload-label>small { display:block; margin-top:8px; font-size:11px; line-height:1.8; color:var(--muted); }
+.el-upload-label>small.el-field-error { color:#be3455; }
+.dark .el-cancel-icon { background:#422b36; color:#f5acbc; }
+.dark .el-upload-label>small.el-field-error { color:#f5acbc; }
+@media(max-width:540px) { .el-upload-control { flex-wrap:wrap; } .el-upload-control :deep(button) { width:100%; } .el-cancel-period>small { margin-left:0; } }
 </style>

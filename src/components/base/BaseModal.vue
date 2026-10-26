@@ -1,5 +1,6 @@
 <script setup>
 import { onBeforeUnmount, ref, useId, watch } from 'vue';
+import { X } from 'lucide-vue-next';
 
 defineOptions({ inheritAttrs: false });
 
@@ -63,7 +64,7 @@ onBeforeUnmount(() => {
 <template>
   <Teleport to="body">
     <dialog ref="dialog" v-bind="$attrs" :data-size="size" :aria-busy="busy" :aria-labelledby="titleId" :aria-describedby="description ? descriptionId : undefined" class="base-modal modal-surface rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:text-white" @cancel="onCancel" @click="onBackdrop">
-      <header v-if="showHeader" class="base-modal-header"><h2 :id="titleId">{{ title }}</h2><button type="button" class="icon-button" aria-label="បិទ" :disabled="busy" @click="close">×</button></header>
+      <header v-if="showHeader" class="base-modal-header"><h2 :id="titleId">{{ title }}</h2><button type="button" class="icon-button modal-close-button" aria-label="បិទ" :disabled="busy" @click="close"><X :size="20" aria-hidden="true" /></button></header>
       <h2 v-else :id="titleId" class="sr-only">{{ title }}</h2>
       <p v-if="description" :id="descriptionId" class="base-modal-description">{{ description }}</p>
       <p v-if="error" role="alert" class="form-error">{{ error }}</p>
@@ -81,7 +82,9 @@ onBeforeUnmount(() => {
 .base-modal[data-size="xl"] { max-width: 60rem; }
 .base-modal-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
 .base-modal-header h2 { font-size: 18px; font-weight: 600; }
-.base-modal-header button { font-size: 26px; width: 44px; height: 44px; flex-shrink: 0; }
+.base-modal-header .modal-close-button { display:grid; place-items:center; width:44px; height:44px; padding:0; flex-shrink:0; border:0; border-radius:11px; background:transparent; color:var(--muted); transition:background-color 150ms,color 150ms; }
+.base-modal-header .modal-close-button:hover:not(:disabled) { background:var(--soft); color:var(--ink); }
+.base-modal-header .modal-close-button:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
 .base-modal-description { color: var(--muted); margin-bottom: 20px; }
 .base-modal-footer { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); }
 @media (max-width: 540px) { .base-modal { padding: 20px; } }

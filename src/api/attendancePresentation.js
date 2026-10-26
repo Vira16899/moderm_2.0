@@ -22,20 +22,17 @@ export function attendanceSlots(record) {
     ['AFTERNOON_CHECK_IN', 'ចូលពេលរសៀល'], ['AFTERNOON_CHECK_OUT', 'ចេញពេលរសៀល'],
   ].map(([key, label]) => ({ key, label, value: record?.[key] ?? record?.[key.toLowerCase()] ?? record?.[key.replaceAll('_', '').toLowerCase()] }));
   if (sessions.some(session => session.value != null)) return sessions;
-  return [
+  const aggregate = [
     { key: 'check-in', label: 'ម៉ោងចូល', value: record?.checkInTime ?? record?.check_in ?? record?.check_in_time ?? record?.clockIn ?? record?.clock_in },
     { key: 'check-out', label: 'ម៉ោងចេញ', value: record?.checkOutTime ?? record?.check_out ?? record?.check_out_time ?? record?.clockOut ?? record?.clock_out },
   ];
+  return aggregate.some(slot => slot.value != null && slot.value !== '') ? aggregate : sessions;
 }
 export function departmentAttendanceRows(payload) {
   const data = payload?.data?.data ?? payload?.data ?? payload;
   const rows = Array.isArray(data) ? data : data?.attendance ?? data?.records ?? data?.employees ?? data?.data;
   if (!Array.isArray(rows)) throw new Error('មិនអាចអានកំណត់ត្រាវត្តមានក្នុងផ្នែកបានទេ។');
-  return attendanceRecords(rows.map(row => ({ ...row, user: row.user ?? row.employee }))).map((row, index) => ({
-    ...row,
-    checkIn: row.checkIn || rows[index].checkInTime || rows[index].clockIn || '',
-    checkOut: row.checkOut || rows[index].checkOutTime || rows[index].clockOut || '',
-  }));
+  return attendanceRecords(rows.map(row => row && ({ ...row, user: row.user ?? row.employee })));
 }
 
 /** Join by employee ID only; attendance IDs and names are not employee identities. */

@@ -47,3 +47,21 @@ test('department attendance uses nested avatars and joins missing images by empl
   assert.equal(records[1].avatar, '');
   assert.equal(withEmployeeAvatars(records, [{ id: 9, avatar: 'updated.webp' }])[1].avatar, 'updated.webp');
 });
+
+test('empty today cards keep all four factory attendance slots before the first scan', () => {
+  for (const record of [undefined, null, {}, { checkInTime: '', checkOutTime: '' }]) {
+    const slots = attendanceSlots(record);
+    assert.equal(slots.length, 4);
+    assert.deepEqual(slots.map(slot => slot.key), ['MORNING_CHECK_IN', 'MORNING_CHECK_OUT', 'AFTERNOON_CHECK_IN', 'AFTERNOON_CHECK_OUT']);
+    assert.ok(slots.every(slot => !slot.value));
+  }
+  assert.equal(attendanceSlots({ AFTERNOON_CHECK_IN: '14:27' }).length, 4);
+  assert.equal(attendanceSlots({ AFTERNOON_CHECK_IN: '14:27' }).filter(slot => slot.value).length, 1);
+});
+
+test('department shift timestamps display only the recorded time', () => {
+  const [row] = departmentAttendanceRows({data:[{attendance_id:2,employee_id:6,afternoon_check_in:'2026-10-25 14:27:37',afternoon_check_out:'2026-10-25 17:03:21'}]});
+  assert.equal(attendanceTime(row.checkIn),'14:27');
+  assert.equal(attendanceTime(row.checkOut),'17:03');
+  assert.equal(attendanceTime('2026-10-25T07:27:37Z'),'14:27');
+});

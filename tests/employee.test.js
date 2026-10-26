@@ -6,6 +6,7 @@ import { API_ENDPOINTS } from '../src/api/endpoints.js';
 import { employeeError } from '../src/utils/employeeMessages.js';
 
 test('employee feedback translates overlapping dates and never exposes English API errors', () => {
+  assert.match(employeeError(new Error('Invalid file upload.')), /ម៉ាស៊ីនមេ/);
   const overlap = employeeError(new Error('You already have a leave request on these dates'));
   assert.match(overlap, /កាលបរិច្ឆេទ/);
   assert.doesNotMatch(overlap, /[a-z]/i);
@@ -18,38 +19,34 @@ test('employee feedback translates overlapping dates and never exposes English A
   assert.equal(employeeError(new Error('Internal error'), 'មិនអាចរក្សាទុកបានទេ។'), 'មិនអាចរក្សាទុកបានទេ។');
 });
 
-test('leave JSON payload sends a trimmed URL and omits identity and upload data', () => {
-  const form = { leaveType: ' ANNUAL ', startDate: '2026-10-01', endDate: '2026-10-02', reason: ' Family event ', fileUrl: '' };
-  assert.deepEqual(leaveBody(form), { start_date: '2026-10-01', end_date: '2026-10-02', reason: 'Family event', file_url: '' });
-  assert.equal(leaveBody({ ...form, fileUrl: ' https://example.com/proof.pdf ' }).file_url, 'https://example.com/proof.pdf');
-  assert.equal(leaveBody({ ...form, fileUrl: 'http://example.com/proof.jpg' }).file_url, 'http://example.com/proof.jpg');
-  for (const fileUrl of ['javascript:alert(1)', 'data:text/html,test', 'file:///test.pdf', 'not a url', 'https://']) assert.ok(leaveErrors({ ...form, fileUrl }).fileUrl);
-  assert.throws(() => leaveBody({ ...form, endDate: '2026-09-30' }));
-  assert.throws(() => leaveBody({ ...form, startDate: '2026-02-30' }));
-  assert.throws(() => leaveBody({ ...form, reason: '  ' }));
-  assert.equal(leaveDays('2026-10-01', '2026-10-03'), 2);
-  assert.equal(leaveDays('2026-10-01', '2026-10-01'), 0);
+test('leave multipart payload carries a real uploaded file and omits identity and leave type', () => {
+  const form = { startDate:'2026-10-01', endDate:'2026-10-02', reason:' Family event ', file:null };
+  assert.deepEqual(leaveBody(form), {start_date:'2026-10-01', end_date:'2026-10-02', reason:'Family event',file_url:null});
+  const file = new File(['proof'], 'proof.pdf', {type:'application/pdf'});
+  const uploaded = leaveBody({...form,file});
+  assert.equal(uploaded.get('file').name,'proof.pdf');
+  assert.equal(uploaded.get('file').size,5);
+  assert.equal(uploaded.has('leave_type'),false);
+  assert.equal(uploaded.has('user_id'),false);
+  assert.throws(() => leaveBody({...form,startDate:'2026-02-30'}));
+  assert.throws(() => leaveBody({...form,endDate:'2026-09-30'}));
+  assert.throws(() => leaveBody({...form,reason:' '}));
 });
 
-test('leave over two elapsed days requires a valid evidence URL', () => {
-  const form = { leaveType: ' ច្បាប់ផ្ទាល់ខ្លួន ', startDate: '2026-10-12', endDate: '2026-10-13', reason: 'Family matter', fileUrl: '' };
-  assert.deepEqual(leaveErrors(form), {});
-  assert.equal(leaveBody(form).file_url, '');
-  assert.equal(Object.hasOwn(leaveBody(form), 'leave_type'), false);
-  const long = { ...form, endDate: '2026-10-15' };
-  assert.deepEqual(leaveErrors({ ...form, endDate: '2026-10-14' }), {});
-  assert.ok(leaveErrors({ ...form, endDate: form.startDate }).endDate);
-  assert.match(leaveErrors(long).fileUrl, /២/);
+test('leave over two elapsed days requires a new file or keeps the existing API attachment', () => {
+  const form = {startDate:'2026-10-12',endDate:'2026-10-13',reason:'Family matter',file:null,existingFileUrl:''};
+  assert.deepEqual(leaveErrors(form),{});
+  assert.equal(leaveBody(form).file_url,null);
+  const long = {...form,endDate:'2026-10-15'};
+  assert.match(leaveErrors(long).file,/២/);
   assert.throws(() => leaveBody(long));
-  const existing = { ...long, fileUrl: 'https://example.com/existing.pdf' };
-  assert.deepEqual(leaveErrors(existing), {});
-  assert.equal(leaveBody(existing).file_url, existing.fileUrl);
-  assert.ok(leaveErrors({ ...existing, fileUrl: '  ' }).fileUrl);
-  assert.deepEqual(leaveErrors({ ...form, leaveType: null }), {});
-  assert.deepEqual(leaveErrors({ ...form, leaveType: undefined }), {});
-  assert.match(employeeError(new Error('Leave more than 2 days requires a file (file_url)')), /២/);
+  assert.deepEqual(leaveErrors({...long,existingFileUrl:'uploads/leaves/proof.pdf'}),{});
+  assert.equal(Object.hasOwn(leaveBody({...long,existingFileUrl:'uploads/leaves/proof.pdf'}),'file_url'),false);
+  const image = new File(['image'], 'proof.png', {type:'image/png'});
+  assert.deepEqual(leaveErrors({...long,file:image}),{});
+  for (const file of [new File(['code'],'unsafe.html',{type:'text/html'}),new File([],'empty.pdf',{type:'application/pdf'})]) assert.ok(leaveErrors({...form,file}).file);
+  for (const name of ['proof.doc','proof.docx','proof.pdf']) assert.deepEqual(leaveErrors({...long,file:new File(['proof'],name)}),{});
 });
-
 test('one day is the following date with month, year and leap-year rollover', () => {
   assert.equal(leaveDays('2026-10-25', '2026-10-26'), 1);
   assert.equal(nextLeaveDate('2026-10-25'), '2026-10-26');
@@ -108,10 +105,11 @@ test('employee API sends mutation bodies using correct endpoints, including DELE
   const body = leaveBody({ leaveType: 'SICK', startDate: '2026-10-01', endDate: '2026-10-03', reason: 'Updated', fileUrl: 'https://example.com/proof.pdf' });
   const updated = await employeeApi.updateLeave('1', body);
   assert.equal(updated.endpoint.path, '/updateLeaveRequest');
-  assert.deepEqual(updated.body, { ...body, id: 1 });
-  assert.equal(body.id, undefined, 'do not mutate the form payload');
+  assert.equal(updated.body.id, 1);
+  assert.equal(updated.body.reason, 'Updated');
+  assert.equal(Object.hasOwn(body,'id'), false, 'do not mutate the form payload');
   const shortUpdate = await employeeApi.updateLeave(12, leaveBody({ leaveType: 'ANNUAL', reason: 'Family matter', startDate: '2026-10-12', endDate: '2026-10-13', fileUrl: '' }));
-  assert.deepEqual(shortUpdate.body, { id: 12, reason: 'Family matter', start_date: '2026-10-12', end_date: '2026-10-13', file_url: '' });
+  assert.deepEqual(shortUpdate.body, { id: 12, reason: 'Family matter', start_date: '2026-10-12', end_date: '2026-10-13', file_url: null });
   const created = await employeeApi.createLeave(body);
   assert.equal(created.endpoint.path, '/leaveRequest');
   assert.deepEqual(created.body, body);

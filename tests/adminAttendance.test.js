@@ -40,3 +40,17 @@ test('attendance records normalize date/time aliases and distinguish malformed r
   assert.deepEqual(attendanceRecords({ data: [] }), []);
   assert.throws(() => attendanceRecords({ message: 'Malformed' }));
 });
+
+test('admin and manager attendance map shift timestamps to first check-in and last check-out', () => {
+  const [row] = attendanceRecords({data:[{
+    attendance_id:2, employee_id:6, Eng_name:'Vira Chea', khmer_name:'តតត', attendance_date:'2026-10-25',
+    morning_check_in:null, morning_check_out:null, afternoon_check_in:'2026-10-25 14:27:37', afternoon_check_out:null, status:'LATE',
+  }]});
+  assert.equal(row.checkIn,'2026-10-25 14:27:37');
+  assert.equal(row.checkOut,'');
+  assert.equal(row.employeeId,6);
+  const [full] = attendanceRecords([{morning_check_in:'2026-10-25 07:30:00', morning_check_out:'2026-10-25 12:00:00', afternoon_check_in:'2026-10-25 13:30:00', afternoon_check_out:'2026-10-25 17:00:00'}]);
+  assert.equal(full.checkIn,'2026-10-25 07:30:00');
+  assert.equal(full.checkOut,'2026-10-25 17:00:00');
+  assert.equal(attendanceRecords([{morning_check_out:'12:00:00'}])[0].checkOut,'12:00:00');
+});

@@ -47,8 +47,8 @@ export function attendanceRecords(payload) {
     avatar: row.avatar ?? row.profile_image ?? row.user?.avatar ?? row.user?.profile_image ?? '',
     department: row.department_name ?? row.departmentKh ?? row.department?.name ?? '',
     date: String(row.attendance_date ?? row.date ?? row.created_at ?? '').slice(0, 10),
-    checkIn: row.check_in ?? row.check_in_time ?? row.clock_in ?? row.time_in ?? '',
-    checkOut: row.check_out ?? row.check_out_time ?? row.clock_out ?? row.time_out ?? '',
+    checkIn: row.check_in || row.check_in_time || row.checkInTime || row.clock_in || row.clockIn || row.time_in || row.morning_check_in || row.MORNING_CHECK_IN || row.afternoon_check_in || row.AFTERNOON_CHECK_IN || '',
+    checkOut: row.check_out || row.check_out_time || row.checkOutTime || row.clock_out || row.clockOut || row.time_out || row.afternoon_check_out || row.AFTERNOON_CHECK_OUT || row.morning_check_out || row.MORNING_CHECK_OUT || '',
     status: String(row.status ?? row.attendance_status ?? '').toLowerCase(),
   }));
 }

@@ -7,13 +7,17 @@ import BaseButton from '@/components/base/BaseButton.vue';
 import BaseTable from '@/components/base/BaseTable.vue';
 import { employeeError } from '@/utils/employeeMessages';
 import { employeeApi } from '@/api/employeeApi';
-import { attendanceHistory, leaveHistory, localToday, money, salaryHistory, statusLabels } from '@/api/employeeData';
+import { apiRequest } from '@/api/client';
+import { API_ENDPOINTS } from '@/api/endpoints';
+import { attendanceHistory, leaveHistory, localToday, money, salaryHistory, statusLabels, currentProfileSalary } from '@/api/employeeData';
 import { attendanceSlots, attendanceTime } from '@/api/attendancePresentation';
 import { employeeAttendanceTrend } from '@/api/employeeInsights';
 import { CalendarDays, Clock3, Wallet, ArrowUpRight, ClipboardList, ChartColumnIncreasing, ScanLine, CheckCircle2 } from 'lucide-vue-next';
 defineOptions({ inheritAttrs:false });
 const props = defineProps({ currentUser: { type:Object, default:() => ({}) } });
 const leaves = ref([]), salaries = ref([]), attendance = ref([]);
+const profileSalary = ref(null);
+const salaryBalance = computed(() => profileSalary.value ?? salaries.value[0]?.salary);
 const loading = reactive({ leaves:true, salary:true, attendance:true });
 const errors = reactive({ leaves:'', salary:'', attendance:'' });
 const period = ref(6);
@@ -44,7 +48,16 @@ async function loadSource(key) {
   inFlight.add(key); loading[key] = true; errors[key] = '';
   const source = sources[key];
   try {
-    const data = source.parse(await source.fetch());
+    let data;
+    if (key === 'salary') {
+      const [history, profile] = await Promise.allSettled([source.fetch(), apiRequest(API_ENDPOINTS.profile.getMe)]);
+      if (disposed) return;
+      profileSalary.value = profile.status === 'fulfilled' ? currentProfileSalary(profile.value) : null;
+      if (history.status === 'rejected' && profileSalary.value == null) throw history.reason;
+      data = history.status === 'fulfilled' ? source.parse(history.value) : [];
+    } else {
+      data = source.parse(await source.fetch());
+    }
     if (!disposed) source.state.value = data;
   } catch (cause) { if (!disposed) errors[key] = employeeError(cause, `មិនអាចទាញយកព័ត៌មាន${source.label}បានទេ។ សូមព្យាយាមម្ដងទៀត។`); }
   finally { inFlight.delete(key); if (!disposed) loading[key] = false; }
@@ -58,7 +71,7 @@ const columns = [{key:'reason',label:'សំណើសុំច្បាប់'},
     <header class="workspace-page-header page-heading"><div><h1>ផ្ទាំងគ្រប់គ្រងផ្ទាល់ខ្លួន</h1><p>សូមស្វាគមន៍ {{ props.currentUser.nameKh || props.currentUser.nameEn || 'បុគ្គលិក' }} · ព័ត៌មានការងារសម្រាប់អ្នក</p></div><span class="date-badge"><CalendarDays :size="16" />{{ dateLabel(todayDate) }}</span></header>
     <div class="metrics-grid">
       <DashboardMetric title="ថ្ងៃមានកំណត់ត្រាក្នុងខែនេះ" :value="errors.attendance ? '—' : monthly" note="រាប់ថ្ងៃដែលមានកំណត់ត្រា មិនរាប់ស្ទួន" :icon="CalendarDays" color="blue" :loading="loading.attendance" />
-      <DashboardMetric title="ប្រាក់ខែចុងក្រោយ" :value="errors.salary ? '—' : money(salaries[0]?.salary)" :note="salaries.length && !errors.salary ? dateLabel(salaries[0].date) : 'មិនទាន់មានទិន្នន័យ'" :icon="Wallet" color="green" :loading="loading.salary" />
+      <DashboardMetric title="ប្រាក់ខែចុងក្រោយ" :value="errors.salary ? '—' : money(salaryBalance)" :note="profileSalary != null ? 'តាមព័ត៌មានគណនីបច្ចុប្បន្នរបស់អ្នក' : salaries.length && !errors.salary ? dateLabel(salaries[0].date) : 'មិនទាន់មានទិន្នន័យ'" :icon="Wallet" color="green" :loading="loading.salary" />
       <DashboardMetric title="សំណើកំពុងរង់ចាំ" :value="errors.leaves ? '—' : pending" note="រង់ចាំការអនុម័ត" :icon="Clock3" color="amber" :loading="loading.leaves" />
       <DashboardMetric title="សំណើសរុប" :value="errors.leaves ? '—' : leaves.length" note="កំណត់ត្រាសំណើសុំច្បាប់របស់ខ្ញុំ" :icon="ClipboardList" color="violet" :loading="loading.leaves" />
     </div>
@@ -71,7 +84,7 @@ const columns = [{key:'reason',label:'សំណើសុំច្បាប់'},
         <template v-else><div class="eh-chart" :class="{ 'eh-chart-dense': period === 12 }" :style="{'--months':period}" role="img" :aria-label="trend.map(month => monthLabel(month.key) + ': ' + number(month.count) + ' ថ្ងៃ').join(', ')"><div v-for="month in trend" :key="month.key" class="eh-column"><div class="eh-track"><span class="eh-bar" :style="{height:month.count / maxCount * 100 + '%'}"><strong>{{ number(month.count) }}</strong></span></div><span class="eh-month">{{ monthLabel(month.key) }}</span></div></div><p class="eh-source">ផ្អែកលើប្រវត្តិវត្តមានដែលប្រព័ន្ធបានផ្ដល់។ មិនរាប់ជាអត្រាវត្តមាន ឬថ្ងៃធ្វើការសរុបទេ។</p></template>
       </section>
       <section class="dashboard-panel eh-today" :aria-busy="loading.attendance" aria-labelledby="employee-today-title"><div class="eh-panel-heading"><div><h2 id="employee-today-title"><ScanLine :size="20" />វត្តមានថ្ងៃនេះ</h2><p>{{ dateLabel(todayDate) }}</p></div><span v-if="!loading.attendance && !errors.attendance" class="eh-count">{{ number(recorded) }}/{{ number(slots.length) }}</span></div>
-        <BaseSkeleton v-if="loading.attendance" :lines="3" label="កំពុងទាញយកម៉ោងវត្តមាន…" /><p v-else-if="errors.attendance" class="eh-source">មិនទាន់អាចបង្ហាញម៉ោងបានទេ។</p><div v-else class="eh-slots"><div v-for="slot in slots" :key="slot.key"><span><CheckCircle2 v-if="slot.value" :size="17" /><Clock3 v-else :size="17" />{{ slot.label }}</span><strong :class="{recorded:slot.value}">{{ slot.value ? attendanceTime(slot.value) : 'មិនទាន់កត់ត្រា' }}</strong></div></div>
+        <BaseSkeleton v-if="loading.attendance" :lines="3" label="កំពុងទាញយកម៉ោងវត្តមាន…" /><p v-else-if="errors.attendance" class="eh-source">មិនទាន់អាចបង្ហាញម៉ោងបានទេ។</p><div v-else class="eh-slots"><div v-for="slot in slots" :key="slot.key" :class="{ 'slot-complete': slot.value }"><span><CheckCircle2 v-if="slot.value" :size="17" /><Clock3 v-else :size="17" />{{ slot.label }}</span><strong :class="{recorded:slot.value}">{{ slot.value ? attendanceTime(slot.value) : 'មិនទាន់កត់ត្រា' }}</strong></div></div>
         <RouterLink class="eh-scan-link" to="/attendance"><ScanLine :size="18" />ស្កេន QR វត្តមាន<ArrowUpRight :size="16" /></RouterLink>
       </section>
     </div>
@@ -130,4 +143,9 @@ a:focus-visible,select:focus-visible { outline:2px solid var(--blue); outline-of
 @media(max-width:1100px) { .eh-main-grid,.eh-bottom-grid { grid-template-columns:1fr; } }
 @media(max-width:600px) { .eh-main-grid,.eh-bottom-grid { gap:16px; } .eh-panel-heading { flex-wrap:wrap; } .eh-chart { gap:5px; } .eh-month { writing-mode:vertical-rl; font-size:9px; } .eh-recent>.eh-panel-heading { padding:18px 18px 0; } .eh-error { align-items:flex-start; flex-direction:column; } }
 @media(prefers-reduced-motion:reduce) { .eh-bar { transition:none; } }
+</style>
+
+<style scoped>
+.eh-slots .slot-complete>span,.eh-slots .slot-complete>span svg,.eh-slots .slot-complete strong { color:#18744f !important; }
+.dark .eh-slots .slot-complete>span,.dark .eh-slots .slot-complete>span svg,.dark .eh-slots .slot-complete strong { color:#83dfb4 !important; }
 </style>

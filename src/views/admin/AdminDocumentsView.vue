@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { FileCheck2, FileText, UserRound, Download, RefreshCw, Eye, CheckCircle2, AlertCircle } from 'lucide-vue-next';
+import CompactSelect from '../../components/common/CompactSelect.vue';
 import BaseButton from '../../components/base/BaseButton.vue';
 import BaseSkeleton from '../../components/base/BaseSkeleton.vue';
 import { employmentLetter, employmentFilename, employmentUserBody, employmentEligibleUsers, letterValue, letterDate, letterSalary } from '../../api/employmentVerification.js';
@@ -15,6 +16,7 @@ function clearUrls(){ if(pdfUrl.value)URL.revokeObjectURL(pdfUrl.value);if(previ
 onBeforeUnmount(()=>{disposed=true;clearUrls();});
 watch(userId,()=>{fieldError.value='';error.value='';letter.value=null;clearUrls();});
 const sortedUsers=computed(()=>employmentEligibleUsers(props.users));
+const employeeOptions=computed(()=>sortedUsers.value.map(user=>({value:String(user.id),label:(user.nameKh || user.nameEn) + ' · ' + user.id})));
 const employee=computed(()=>letter.value?.employee);
 const info=computed(()=>employee.value?[
  ['ឈ្មោះជាខ្មែរ',letterValue(employee.value.khmer_name)],['ឈ្មោះជាឡាតាំង',letterValue(employee.value.Eng_name)],
@@ -60,7 +62,7 @@ async function run(type){
   <header class="workspace-page-header documents-heading"><div><h1>លិខិតបញ្ជាក់ការងារ</h1><p>ជ្រើសរើសបុគ្គលិក ដើម្បីរៀបចំ ពិនិត្យ និងទាញយកលិខិតជា PDF។</p></div><span class="document-format"><FileText :size="17"/>A4 · PDF</span></header>
   <div class="documents-grid">
    <section class="documents-panel documents-controls" aria-labelledby="document-controls-title"><header class="documents-panel-heading"><span class="documents-icon"><UserRound :size="21"/></span><div><h2 id="document-controls-title">ព័ត៌មានបុគ្គលិក</h2><p>ប្រើព័ត៌មានបុគ្គលិកពីប្រព័ន្ធ</p></div></header>
-    <form novalidate @submit.prevent="run('create')"><fieldset :disabled="!!busy"><label for="document-employee">ជ្រើសរើសបុគ្គលិក</label><select id="document-employee" v-model="userId" :disabled="usersLoading || !sortedUsers.length"><option value="" disabled>{{ usersLoading ? 'កំពុងទាញយកបុគ្គលិក…' : 'ជ្រើសរើសឈ្មោះបុគ្គលិក' }}</option><option v-for="user in sortedUsers" :key="user.id" :value="String(user.id)">{{ user.nameKh || user.nameEn }} · {{ user.id }}</option></select><p v-if="usersError" class="document-field-error">{{ usersError }} <button type="button" class="text-button" @click="onRetryUsers?.()">ព្យាយាមម្ដងទៀត</button></p><label for="document-user-id">លេខសម្គាល់បុគ្គលិក</label><input id="document-user-id" v-model="userId" inputmode="numeric" autocomplete="off" placeholder="ឧ. 3" :aria-invalid="!!fieldError" :aria-describedby="fieldError?'document-id-error':undefined"/><p v-if="fieldError" id="document-id-error" class="document-field-error">{{ fieldError }}</p><BaseButton type="submit" class="document-control-button" :loading="busy==='create'" :disabled="!!busy || !onCreate"><FileCheck2 :size="18"/>បង្កើតលិខិត</BaseButton></fieldset></form>
+    <form novalidate @submit.prevent="run('create')"><fieldset :disabled="!!busy"><label for="document-employee">ជ្រើសរើសបុគ្គលិក</label><CompactSelect id="document-employee" v-model="userId" :options="employeeOptions" :disabled="!!busy || usersLoading || !sortedUsers.length" :placeholder="usersLoading ? 'កំពុងទាញយកបុគ្គលិក…' : 'ជ្រើសរើសឈ្មោះបុគ្គលិក'" /><p v-if="usersError" class="document-field-error">{{ usersError }} <button type="button" class="text-button" @click="onRetryUsers?.()">ព្យាយាមម្ដងទៀត</button></p><label for="document-user-id">លេខសម្គាល់បុគ្គលិក</label><input id="document-user-id" v-model="userId" inputmode="numeric" autocomplete="off" placeholder="ឧ. 3" :aria-invalid="!!fieldError" :aria-describedby="fieldError?'document-id-error':undefined"/><p v-if="fieldError" id="document-id-error" class="document-field-error">{{ fieldError }}</p><BaseButton type="submit" class="document-control-button" :loading="busy==='create'" :disabled="!!busy || !onCreate"><FileCheck2 :size="18"/>បង្កើតលិខិត</BaseButton></fieldset></form>
     <p class="document-help">PDF ប្រើគំរូលិខិតដែលបានផ្តល់។ ព័ត៌មានដែលមិនមានក្នុងប្រព័ន្ធនឹងបង្ហាញថា «មិនបានផ្តល់»។</p>
     <div v-if="letter" class="document-employee-summary"><h3><CheckCircle2 :size="17"/>ព័ត៌មានសម្រាប់លិខិត</h3><dl><div v-for="[label,value] in info" :key="label"><dt>{{ label }}</dt><dd>{{ value }}</dd></div><div><dt>កាលបរិច្ឆេទចេញលិខិត</dt><dd>{{ letterDate(letter.generatedAt) }}</dd></div></dl></div>
    </section>

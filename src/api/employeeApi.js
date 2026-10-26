@@ -8,7 +8,7 @@ export const employeeApi = {
   getLeaveHistory: () => apiRequest(API_ENDPOINTS.leaveRequests.getHistory),
   createLeave: (body) => apiRequest(API_ENDPOINTS.leaveRequests.create, { body }),
   updateLeave: (id, body) => apiRequest(API_ENDPOINTS.leaveRequests.update, {
-    body: { ...body, id: leaveId(id) },
+    body: updateLeaveBody(id, body),
   }),
   cancelLeave: (id) => apiRequest(API_ENDPOINTS.leaveRequests.cancel, {
     body: { id: leaveId(id) },
@@ -37,3 +37,14 @@ export function extractEmployeeList(payload, keys = []) {
 
 
 
+
+function updateLeaveBody(id, body) {
+  const value = leaveId(id);
+  if (body instanceof FormData) {
+    const result = new FormData();
+    for (const [key, field] of body.entries()) if (key !== 'id') result.append(key, field);
+    result.append('id', String(value));
+    return result;
+  }
+  return { ...body, id: value };
+}

@@ -85,3 +85,11 @@ html:has(.app-shell), body:has(.app-shell) { height:100%; overflow:hidden; overs
   font-variant-numeric:lining-nums tabular-nums;
 }
 .app-shell .salary-fact strong { letter-spacing:0; }
+
+/* Compact scrolling menus for native selects, including forms inside dialogs. */
+.shared-select-popup { position:fixed; inset:auto; margin:0; padding:5px; box-sizing:border-box; overflow-y:auto; overscroll-behavior:contain; border:1px solid var(--line); border-radius:12px; background:var(--surface); color:var(--ink); box-shadow:0 8px 24px #11243a24; font-family:var(--bs-body-font-family); z-index:1000; }
+.shared-select-option { min-height:38px; padding:7px 10px; border-radius:7px; font-size:13px; line-height:1.7; cursor:pointer; overflow-wrap:anywhere; }
+.shared-select-option.active { background:var(--soft); }
+.shared-select-option[aria-selected="true"] { color:var(--blue); }
+.shared-select-option[aria-disabled="true"] { color:var(--muted); opacity:.65; cursor:default; }
+.dark .shared-select-popup { box-shadow:0 8px 24px #0005; }
