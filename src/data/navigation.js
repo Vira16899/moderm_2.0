@@ -1,4 +1,4 @@
-import { Home as LayoutDashboard, Users, Building2, Calendar, User as UserIcon, DollarSign, FileText, ClipboardList, CalendarCheck2 } from "lucide-vue-next";
+import { Home as LayoutDashboard, Users, Building2, Calendar, User as UserIcon, DollarSign, FileText, ClipboardList, CalendarCheck2, Bell, Megaphone } from "lucide-vue-next";
 
 export function getNavigationItems(currentRole) {
     switch (currentRole) {
@@ -34,6 +34,8 @@ export function getNavigationItems(currentRole) {
             labelKh: "លិខិតបញ្ជាក់ការងារ",
             icon: FileText
           },
+          { id: "notifications", labelKh: "ការជូនដំណឹង", icon: Bell },
+          { id: "announcements", labelKh: "សេចក្តីជូនដំណឹង", icon: Megaphone },
           {
             id: "admin_profile",
             labelKh: "ព័ត៌មានគណនីខ្ញុំ",
@@ -67,6 +69,8 @@ export function getNavigationItems(currentRole) {
             labelKh: "ប្រវត្តិប្រាក់ខែ",
             icon: DollarSign
           },
+          { id: "notifications", labelKh: "ការជូនដំណឹង", icon: Bell },
+          { id: "announcements", labelKh: "សេចក្តីជូនដំណឹង", icon: Megaphone },
           {
             id: "manager_profile",
             labelKh: "ព័ត៌មានគណនីខ្ញុំ",
@@ -97,6 +101,8 @@ export function getNavigationItems(currentRole) {
             icon: DollarSign
           },
 
+          { id: "notifications", labelKh: "ការជូនដំណឹង", icon: Bell },
+          { id: "announcements", labelKh: "សេចក្តីជូនដំណឹង", icon: Megaphone },
           {
             id: "employee_profile",
             labelKh: "ព័ត៌មានប្រវត្តិរូប",

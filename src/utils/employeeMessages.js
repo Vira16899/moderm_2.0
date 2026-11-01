@@ -2,10 +2,10 @@
 export function employeeError(error, fallback = 'សកម្មភាពមិនបានសម្រេច។ សូមព្យាយាមម្ដងទៀត។') {
   const message = String(error?.message ?? error ?? '');
   if (/limit_file_size|file.*(size|large)|ទំហំ.*១០ MB/i.test(message)) return 'ឯកសារត្រូវមានទំហំមិនលើសពី ១០ MB។';
-  if (/សូមជ្រើសរើសរូបភាព/.test(message)) return 'សូមជ្រើសរើសរូបភាព ឬឯកសារ PDF, DOC ឬ DOCX។';
+  if (/សូមជ្រើសរើសរូបភាព/.test(message)) return 'សូមជ្រើសរើសឯកសាររូបភាពប៉ុណ្ណោះ។';
   if (/^invalid file upload\.?$/i.test(message.trim())) return 'ម៉ាស៊ីនមេមិនអាចទទួលឯកសារភ្ជាប់នេះបានទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រង។';
   if (/(more than|over|exceed).*2.*day.*(file|attach)|file.*(required|require).*2.*day|leave.*2.*day.*require/i.test(message)) return 'ការសុំច្បាប់លើសពី ២ ថ្ងៃ ត្រូវភ្ជាប់ឯកសារបញ្ជាក់។';
-  if (/file.*(type|format)|unsupported.*file|invalid.*file|only.*(image|pdf|doc)/i.test(message)) return 'សូមជ្រើសរើសរូបភាព ឬឯកសារ PDF, DOC, DOCX។';
+  if (/file.*(type|format)|unsupported.*file|invalid.*file|only.*(image|pdf|doc)/i.test(message)) return 'សូមជ្រើសរើសឯកសាររូបភាពប៉ុណ្ណោះ។';
   if (/តំណឯកសារ|file.*url|invalid.*url/i.test(message)) return 'សូមបញ្ចូលតំណឯកសារឱ្យបានត្រឹមត្រូវ។';
   if (/already.*leave.*(date|period)|overlap|duplicate.*leave/i.test(message)) return 'អ្នកមានសំណើសុំច្បាប់ក្នុងកាលបរិច្ឆេទនេះរួចហើយ។ សូមជ្រើសរើសកាលបរិច្ឆេទផ្សេង។';
   if (/network|fetch|timeout|connection/i.test(message)) return 'មិនអាចភ្ជាប់ទៅម៉ាស៊ីនមេបានទេ។ សូមពិនិត្យអ៊ីនធឺណិត ហើយព្យាយាមម្ដងទៀត។';

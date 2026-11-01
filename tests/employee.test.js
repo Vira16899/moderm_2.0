@@ -22,9 +22,9 @@ test('employee feedback translates overlapping dates and never exposes English A
 test('leave multipart payload carries a real uploaded file and omits identity and leave type', () => {
   const form = { startDate:'2026-10-01', endDate:'2026-10-02', reason:' Family event ', file:null };
   assert.deepEqual(leaveBody(form), {start_date:'2026-10-01', end_date:'2026-10-02', reason:'Family event',file_url:null});
-  const file = new File(['proof'], 'proof.pdf', {type:'application/pdf'});
+  const file = new File(['proof'], 'proof.png', {type:'image/png'});
   const uploaded = leaveBody({...form,file});
-  assert.equal(uploaded.get('file').name,'proof.pdf');
+  assert.equal(uploaded.get('file').name,'proof.png');
   assert.equal(uploaded.get('file').size,5);
   assert.equal(uploaded.has('leave_type'),false);
   assert.equal(uploaded.has('user_id'),false);
@@ -45,7 +45,7 @@ test('leave over two elapsed days requires a new file or keeps the existing API 
   const image = new File(['image'], 'proof.png', {type:'image/png'});
   assert.deepEqual(leaveErrors({...long,file:image}),{});
   for (const file of [new File(['code'],'unsafe.html',{type:'text/html'}),new File([],'empty.pdf',{type:'application/pdf'})]) assert.ok(leaveErrors({...form,file}).file);
-  for (const name of ['proof.doc','proof.docx','proof.pdf']) assert.deepEqual(leaveErrors({...long,file:new File(['proof'],name)}),{});
+  for (const name of ['proof.doc','proof.docx','proof.pdf']) assert.ok(leaveErrors({...long,file:new File(['proof'],name)}).file);
 });
 test('one day is the following date with month, year and leap-year rollover', () => {
   assert.equal(leaveDays('2026-10-25', '2026-10-26'), 1);

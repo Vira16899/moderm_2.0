@@ -94,3 +94,31 @@
 :root.dark .app-shell :is(.pa-slots,.eh-slots) .slot-complete>span,
 :root.dark .app-shell :is(.pa-slots,.eh-slots) .slot-complete>span svg,
 :root.dark .app-shell :is(.pa-slots,.eh-slots) .slot-complete strong { color:#83dfb4 !important; }
+
+/* Soft filled icon hovers throughout every workspace; no boxed hover outlines. */
+:root :is(.app-shell,.modal-surface,.auth-page) :is(button.icon-button,button.icon-only,button.leave-action,button.el-icon-button,button[aria-label]:has(>svg),button[title]:has(>svg),a.ml-file-link):not(.sidebar-nav *):not(.header-avatar) {
+  --icon-hover-fill:var(--soft);
+  border-radius:10px;
+}
+:root :is(.app-shell,.modal-surface,.auth-page) :is(button.icon-button,button.icon-only,button.leave-action,button.el-icon-button,button[aria-label]:has(>svg),button[title]:has(>svg),a.ml-file-link):not(.sidebar-nav *):not(.header-avatar):is(:hover,:focus-visible):not(:disabled):not([aria-disabled="true"]) {
+  background:var(--icon-hover-fill) !important;
+  border-color:transparent !important;
+  box-shadow:none !important;
+}
+:root :is(.app-shell,.modal-surface) :is(button.icon-only,button.leave-action,button[aria-label],button[title]):is(.approve,:has(.lucide-check),:has(.lucide-circle-check)) { --icon-hover-fill:color-mix(in srgb,#18744f 9%,var(--surface)); }
+:root :is(.app-shell,.modal-surface) :is(button.icon-only,button.leave-action,button[aria-label],button[title]):is(.reject,:has(.lucide-circle-x)) { --icon-hover-fill:color-mix(in srgb,#a46a13 9%,var(--surface)); }
+:root :is(.app-shell,.modal-surface) :is(button.icon-only,button.icon-button,button.leave-action,button[aria-label],button[title]):is(.danger-link,.delete,.el-cancel,:has([class*="lucide-trash"]),:has(.lucide-ban),:has(.lucide-log-out),:has([class*="lucide-pause"])) { --icon-hover-fill:color-mix(in srgb,#c03953 8%,var(--surface)); }
+:root.dark :is(.app-shell,.modal-surface) :is(button.icon-only,button.leave-action,button[aria-label],button[title]):is(.approve,:has(.lucide-check),:has(.lucide-circle-check)) { --icon-hover-fill:#1d3c32; }
+:root.dark :is(.app-shell,.modal-surface) :is(button.icon-only,button.leave-action,button[aria-label],button[title]):is(.reject,:has(.lucide-circle-x)) { --icon-hover-fill:#3c3323; }
+:root.dark :is(.app-shell,.modal-surface) :is(button.icon-only,button.icon-button,button.leave-action,button[aria-label],button[title]):is(.danger-link,.delete,.el-cancel,:has([class*="lucide-trash"]),:has(.lucide-ban),:has(.lucide-log-out),:has([class*="lucide-pause"])) { --icon-hover-fill:#422b36; }
+@media(prefers-reduced-motion:no-preference) {
+  :root :is(.app-shell,.modal-surface,.auth-page) :is(button.icon-button,button.icon-only,button.leave-action,button.el-icon-button,button[aria-label]:has(>svg),button[title]:has(>svg),a.ml-file-link) { transition:background-color 150ms ease,color 150ms ease,box-shadow 150ms ease; }
+}
+:root.dark :is(.app-shell,.modal-surface) :is(button.icon-only,button.leave-action,button[aria-label]:has(>svg),button[title]:has(>svg)):is(.approve,:has(.lucide-check),:has(.lucide-circle-check)):is(:hover,:focus-visible):not(:disabled) { color:#9ae0bb !important; }
+:root.dark :is(.app-shell,.modal-surface) :is(button.icon-only,button.leave-action,button[aria-label]:has(>svg),button[title]:has(>svg)):is(.reject,:has(.lucide-circle-x)):is(:hover,:focus-visible):not(:disabled) { color:#f0cf86 !important; }
+:root.dark :is(.app-shell,.modal-surface) :is(button.icon-only,button.icon-button,button.leave-action,button[aria-label]:has(>svg),button[title]:has(>svg)):is(.danger-link,.delete,.el-cancel,:has([class*="lucide-trash"]),:has(.lucide-ban),:has(.lucide-log-out),:has([class*="lucide-pause"])):is(:hover,:focus-visible):not(:disabled) { color:#f5acbc !important; }
+
+:root :is(.app-shell,.modal-surface,.auth-page) :is(button.icon-button,button.icon-only,button.leave-action,button.el-icon-button,button[aria-label]:has(>svg),button[title]:has(>svg),a.ml-file-link):not(.sidebar-nav *):not(.header-avatar):focus-visible:not(:disabled) {
+  outline:2px solid var(--blue);
+  outline-offset:3px;
+}

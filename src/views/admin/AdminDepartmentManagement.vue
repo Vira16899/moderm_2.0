@@ -5,6 +5,8 @@ import { AlertTriangle, Building2, Edit2, MapPin, Plus, Save, Trash2, UserCheck,
 import BaseSkeleton from '../../components/base/BaseSkeleton.vue';
 import BaseState from '../../components/base/BaseState.vue';
 import BaseButton from '../../components/base/BaseButton.vue';
+import AvatarStack from '../../components/common/AvatarStack.vue';
+import { departmentMembers } from '../../utils/departmentMembers.js';
 import UserAvatar from '../../components/common/UserAvatar.vue';
 import AdminDepartmentDetails from './AdminDepartmentDetails.vue';
 import DepartmentFormModal from '../../components/modals/DepartmentFormModal.vue';
@@ -68,7 +70,7 @@ async function deleteDepartment() {
         <button type="button" class="department-card-open" :data-department-id="department.id" :aria-label="'មើលព័ត៌មាននាយកដ្ឋាន ' + (department.nameKh || department.nameEn)" @click="viewDepartment(department)"><span class="sr-only">មើលព័ត៌មាននាយកដ្ឋាន</span></button>
         <div class="department-card-top"><span class="department-card-icon"><Building2 :size="21" aria-hidden="true"/></span><h2 :id="cardId + '-' + department.id" class="department-name">{{ department.nameKh || department.nameEn }}</h2><div class="department-card-actions"><button v-if="onUpdateDepartment" type="button" class="icon-button" aria-label="កែប្រែនាយកដ្ឋាន" title="កែប្រែនាយកដ្ឋាន" @click="openEditModal(department)"><Edit2 :size="17"/></button><button v-if="onDeleteDepartment" type="button" class="icon-button danger-link" aria-label="លុបនាយកដ្ឋាន" title="លុបនាយកដ្ឋាន" @click="actionError = ''; deptToDelete = department"><Trash2 :size="17"/></button></div></div>
         <p class="department-description">{{ department.descriptionKh || department.descriptionEn || 'មិនទាន់មានការពិពណ៌នា។' }}</p>
-        <p v-if="conflictedDepartment(department)" class="text-xs text-amber-700 dark:text-amber-300" role="status">អ្នកគ្រប់គ្រងនេះមាននាយកដ្ឋានច្រើន។ សូមដកការចាត់តាំងដែលមិនត្រឹមត្រូវ។</p><div class="department-card-meta"><span><Users :size="16" aria-hidden="true"/><strong>{{ department.employeeCount ?? '—' }}</strong> បុគ្គលិក</span><span v-if="department.location"><MapPin :size="15" aria-hidden="true"/>{{ department.location }}</span></div>
+        <p v-if="conflictedDepartment(department)" class="text-xs text-amber-700 dark:text-amber-300" role="status">អ្នកគ្រប់គ្រងនេះមាននាយកដ្ឋានច្រើន។ សូមដកការចាត់តាំងដែលមិនត្រឹមត្រូវ។</p><div class="department-card-meta"><AvatarStack :members="departmentMembers(department, users)" :total="department.employeeCount" /><span><Users :size="16" aria-hidden="true"/><strong>{{ department.employeeCount ?? '—' }}</strong> បុគ្គលិក</span><span v-if="department.location"><MapPin :size="15" aria-hidden="true"/>{{ department.location }}</span></div>
         <footer class="department-card-footer"><UserAvatar :src="managerFor(department)?.avatar || department.managerAvatar" :name="managerFor(department)?.nameEn || department.managerNameEn" :size="36"/><div class="department-manager"><small>ប្រធានផ្នែក</small><strong>{{ managerFor(department)?.nameKh || department.managerNameKh || 'មិនទាន់ចាត់តាំង' }}</strong></div><button v-if="onAssignManager" type="button" class="department-assign" aria-label="ចាត់តាំងប្រធានផ្នែក" title="ចាត់តាំងប្រធានផ្នែក" @click="openAssignModal(department)"><UserCheck :size="17"/></button></footer>
       </article>
     </section>

@@ -5,6 +5,7 @@ import BaseTable from '../../components/base/BaseTable.vue';
 import BaseButton from '../../components/base/BaseButton.vue';
 import BaseModal from '../../components/base/BaseModal.vue';
 import BaseSkeleton from '../../components/base/BaseSkeleton.vue';
+import LeaveAttachmentPreview from '../../components/common/LeaveAttachmentPreview.vue';
 import UserAvatar from '../../components/common/UserAvatar.vue';
 import { notify } from '../../stores/toasts.js';
 import { API_BASE_URL } from '../../auth/index.js';
@@ -173,7 +174,7 @@ onMounted(refresh);
    <div v-if="detailError" class="form-error" role="alert">{{ detailError }} <BaseButton variant="ghost" @click="loadDetail(selectedRequest)">ព្យាយាមម្ដងទៀត</BaseButton></div>
    <dl class="leave-detail-grid"><div><dt>ចាប់ពី</dt><dd>{{ formatDate(currentDetail.startDate) }}</dd></div><div><dt>ដល់</dt><dd>{{ formatDate(currentDetail.endDate) }}</dd></div><div class="leave-reason"><dt>មូលហេតុ</dt><dd>{{ currentDetail.reason || 'មិនបានបញ្ជាក់មូលហេតុ។' }}</dd></div></dl>
 
-   <section v-if="detailAttachment" class="leave-attachment-section" aria-label="ឯកសារភ្ជាប់"><h3>ឯកសារ</h3><a class="leave-detail-attachment" :href="detailAttachment" target="_blank" rel="noopener noreferrer"><span class="leave-file-icon"><Paperclip :size="18" aria-hidden="true"/></span><span>មើលឯកសារភ្ជាប់</span><ArrowUpRight :size="17" aria-hidden="true"/></a></section>
+   <LeaveAttachmentPreview v-if="detailAttachment" :url="detailAttachment" />
    <section class="leave-user-history" aria-labelledby="leave-user-history-title"><h3 id="leave-user-history-title"><History :size="18"/>ប្រវត្តិសំណើរបស់បុគ្គលិក</h3><BaseTable :columns="historyColumns" :rows="previousRequests" :loading="detailLoading" row-clickable :row-label="row => 'មើលសំណើ ' + row.id" caption="ប្រវត្តិសំណើរបស់បុគ្គលិក" empty-text="មិនមានសំណើមុនផ្សេងទៀតទេ។" @row-click="loadDetail"><template #cell-startDate="{row}"><div class="leave-dates"><span>{{ formatDate(row.startDate) }}</span><small><ArrowRight :size="12"/>{{ formatDate(row.endDate) }}</small></div></template><template #cell-createdAt="{value}">{{ formatDate(value) }}</template><template #cell-status="{value}"><span class="leave-status" :class="value">{{ statusLabel(value) }}</span></template></BaseTable></section>
    <template #footer><BaseButton v-if="onReject && currentDetail.status === 'pending'" variant="outline" :disabled="!!busyId" @click="requestAction(selectedRequest,'reject')"><XCircle :size="16"/>បដិសេធ</BaseButton><BaseButton v-if="onApprove && currentDetail.status === 'pending'" :loading="busyId === selectedRequest.id" @click="mutate(selectedRequest,'approve')"><Check :size="16"/>អនុម័តសំណើ</BaseButton></template>
   </BaseModal>

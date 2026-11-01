@@ -9,22 +9,13 @@ test('leave attachment links support uploaded files on the API host and reject e
   for(const value of [null,'','javascript:alert(1)','data:text/html,test','//external.example.com/file','file:///test.pdf']) assert.equal(leaveAttachmentUrl(value,'/backend-api'),'');
 });
 
-test('PDF and Word uploads use canonical MIME types when the browser reports generic binary', async () => {
-  const {leaveUploadFile}=await import('../src/api/leaveAttachments.js');
-  for(const [name,type] of [['RockyLinux Answers.pdf','application/pdf'],['evidence.doc','application/msword'],['evidence.docx','application/vnd.openxmlformats-officedocument.wordprocessingml.document']]) {
-    const source=new File(['document'],name,{type:'application/octet-stream',lastModified:1234});
-    const upload=leaveUploadFile(source);
-    assert.equal(upload.type,type);
-    assert.equal(upload.name,name);
-    assert.equal(upload.lastModified,1234);
-    assert.equal(await upload.text(),'document');
-  }
-  assert.equal(leaveUploadFile(new File(['%PDF-1.7'],'proof.pdf')).type,'application/pdf');
-  const unsafe=new File(['html'],'proof.pdf',{type:'text/html'});
-  assert.equal(leaveUploadFile(unsafe),unsafe,'do not disguise an explicitly different content type');
+test('leave attachments accept images and reject documents or disguised files', async () => {
+  const {leaveFileError}=await import('../src/api/leaveAttachments.js');
+  for(const name of ['proof.pdf','proof.doc','proof.docx']) assert.ok(leaveFileError(new File(['data'],name,{type:'application/pdf'})));
+  assert.ok(leaveFileError(new File(['data'],'proof.pdf',{type:'image/png'})));
+  for(const [name,type] of [['proof.png','image/png'],['proof.jpg','image/jpeg'],['proof.webp','image/webp']]) assert.equal(leaveFileError(new File(['image'],name,{type})), '');
 });
-
 test('leave attachments reject oversized files with Khmer size feedback', async()=>{
   const {leaveFileError,LEAVE_FILE_LIMIT}=await import('../src/api/leaveAttachments.js');
-  assert.match(leaveFileError({name:'proof.pdf',type:'application/pdf',size:LEAVE_FILE_LIMIT+1}),/១០ MB/);
+  assert.match(leaveFileError({name:'proof.png',type:'image/png',size:LEAVE_FILE_LIMIT+1}),/១០ MB/);
 });

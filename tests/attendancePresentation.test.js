@@ -1,6 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { attendanceSlots, attendanceState, attendanceStateLabel, attendanceTime, departmentAttendanceRows } from '../src/api/attendancePresentation.js';
+import { attendanceHistory } from '../src/api/employeeData.js';
+
+test('personal history uses available shift times for the supplied employee response', () => {
+  const [row] = attendanceHistory({ result: true, data: [{
+    id: 7, attendance_date: '2026-10-26', morning_check_in: null,
+    morning_check_out: '2026-10-26 10:40:36', afternoon_check_in: '2026-10-26 07:50:44',
+    afternoon_check_out: null, status: 'LATE', late_count: 0, late_minutes: 0,
+  }] });
+  assert.equal(attendanceTime(row.checkInTime), '07:50');
+  assert.equal(attendanceTime(row.checkOutTime), '10:40');
+  assert.equal(attendanceSlots(row).filter(slot => slot.value).length, 2);
+  assert.equal(row.status, 'LATE');
+  assert.equal(row.late_count, 0);
+});
+
+test('personal history prefers morning entry and afternoon exit without inventing missing times', () => {
+  const [row] = attendanceHistory({ data: [{ attendance_date: '2026-10-26',
+    checkInTime: '', checkOutTime: '', morning_check_in: '08:00', morning_check_out: '12:00',
+    afternoon_check_in: '13:00', afternoon_check_out: '17:00',
+  }] });
+  assert.equal(row.checkInTime, '08:00');
+  assert.equal(row.checkOutTime, '17:00');
+  const [empty] = attendanceHistory({ data: [{ attendance_date: '2026-10-26', morning_check_in: null, afternoon_check_out: null }] });
+  assert.equal(attendanceTime(empty.checkInTime), '—');
+  assert.equal(attendanceTime(empty.checkOutTime), '—');
+});
 
 test('personal attendance never repeats aggregate times in invented shift slots', () => {
   const slots = attendanceSlots({ checkInTime: '08:05', checkOutTime: '17:10' });

@@ -7,7 +7,6 @@ import {
   INITIAL_DEPARTMENTS,
   INITIAL_DOCUMENT_REQUESTS,
   INITIAL_LEAVE_REQUESTS,
-  INITIAL_NOTIFICATIONS,
   INITIAL_SALARY_RECORDS,
   INITIAL_USERS,
 } from "@/data/initialData";
@@ -26,7 +25,7 @@ export const useWorkspaceStore = defineStore("workspace", () => {
   const salaryRecords = ref(INITIAL_SALARY_RECORDS.map((record) => ({ ...record })));
   const attendanceToday = ref({ ...INITIAL_ATTENDANCE_TODAY });
   const auditLogs = ref(INITIAL_AUDIT_LOGS.map((log) => ({ ...log })));
-  const notifications = ref(INITIAL_NOTIFICATIONS.map((notification) => ({ ...notification })));
+  const notifications = ref([]);
 
   return {
     isAuthenticated,

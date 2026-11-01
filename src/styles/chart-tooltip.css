@@ -1,0 +1,5 @@
+.chart-data-tooltip { position:fixed; inset:auto; margin:0; z-index:10000; pointer-events:none; max-width:min(280px,calc(100vw - 16px)); padding:10px 13px; border:1px solid var(--line,#dbe4ea); border-radius:10px; background:var(--surface,#fff); color:var(--ink,#172b3d); box-shadow:0 5px 20px #071e3020; font-size:12px; line-height:1.6; }
+.chart-data-tooltip:not([hidden]) { display:flex; flex-direction:column; gap:2px; }
+.chart-data-tooltip span { color:var(--muted,#536b80); }
+.chart-data-tooltip strong { font-family:Inter,'Kantumruy Pro',sans-serif; font-weight:600; }
+.eh-column:focus-visible,.overview-bar-track:focus-visible { outline:2px solid var(--blue); outline-offset:4px; border-radius:6px; }

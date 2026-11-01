@@ -17,6 +17,7 @@
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-vue": "^6.0.9",
     "axios": "^1.20.0",
+    "barcode-detector": "2.2.2",
     "dotenv": "^17.2.3",
     "express": "^4.22.3",
     "lucide-vue-next": "^1.0.0",
@@ -24,11 +25,11 @@
     "pdf-lib": "^1.17.1",
     "pinia": "^4.0.3",
     "qrcode.vue": "^3.11.0",
+    "socket.io-client": "^4.8.4",
     "vite": "^6.2.3",
     "vue": "^3.5.42",
     "vue-qrcode-reader": "^5.7.3",
-    "vue-router": "^4.6.4",
-    "barcode-detector": "2.2.2"
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue-jsx": "^5.1.6",

@@ -12,18 +12,9 @@ export function leaveAttachmentUrl(value, baseUrl) {
 }
 export function leaveFileError(file) {
   if (!file) return '';
-  const image = /^image\//i.test(file.type || '');
-  const document = /\.(pdf|doc|docx)$/i.test(file.name || '');
-  if (!image && !document) return 'សូមជ្រើសរើសរូបភាព ឬឯកសារ PDF, DOC ឬ DOCX។';
+  const image = /^image\//i.test(file.type || '') && /\.(png|jpe?g|webp|gif|bmp|avif|heic|heif|tiff?)$/i.test(file.name || '');
+  if (!image) return 'សូមជ្រើសរើសឯកសាររូបភាពប៉ុណ្ណោះ។';
   if (file.size > LEAVE_FILE_LIMIT) return 'ឯកសារត្រូវមានទំហំមិនលើសពី ១០ MB។';
   if (!file.size) return 'ឯកសារនេះទទេ។ សូមជ្រើសរើសឯកសារផ្សេង។';
   return '';
-}
-
-/** Some desktop browsers report documents as generic binary files. */
-export function leaveUploadFile(file) {
-  const extension = file?.name?.split('.').at(-1)?.toLowerCase();
-  const expected = { pdf:'application/pdf', doc:'application/msword', docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }[extension];
-  if (!expected || (file.type && !['application/octet-stream','binary/octet-stream','application/x-pdf'].includes(file.type.toLowerCase()))) return file;
-  return new File([file], file.name, {type:expected,lastModified:file.lastModified});
 }

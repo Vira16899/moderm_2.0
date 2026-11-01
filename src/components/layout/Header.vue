@@ -1,9 +1,9 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
-import { Moon, Sun, Menu, ChevronRight, ChevronDown, Search, UserRound, LogOut } from 'lucide-vue-next';
+import { Bell, Moon, Sun, Menu, ChevronRight, ChevronDown, Search, UserRound, LogOut } from 'lucide-vue-next';
 import UserAvatar from '../common/UserAvatar.vue';
 import { getNavigationItems } from '../../data/navigation';
-const props = defineProps(['currentRole', 'currentUser', 'activeSection', 'onNavigate', 'theme', 'onToggleTheme', 'notifications', 'onOpenNotifications', 'onOpenProfile', 'onLogoutClick', 'onToggleSidebar', 'sidebarOpen']);
+const props = defineProps(['currentRole', 'currentUser', 'activeSection', 'onNavigate', 'theme', 'onToggleTheme', 'notifications', 'unreadCount', 'onOpenNotifications', 'onOpenProfile', 'onLogoutClick', 'onToggleSidebar', 'sidebarOpen']);
 const profile = ref(null);
 const profileTrigger = ref(null);
 const profileOpen = ref(false);
@@ -60,6 +60,10 @@ onUnmounted(() => document.removeEventListener('pointerdown', close));
         </div>
       </form>
       <button id="header-theme-toggle-btn" class="icon-button" :aria-label="theme === 'dark' ? 'ប្រើផ្ទៃភ្លឺ' : 'ប្រើផ្ទៃងងឹត'" @click="onToggleTheme"><Sun v-if="theme === 'dark'" :size="18"/><Moon v-else :size="18"/></button>
+      <button id="header-notifications-btn" class="icon-button relative" :aria-label="`ការជូនដំណឹង (${unreadCount || 0} មិនទាន់អាន)`" aria-haspopup="dialog" @click="onOpenNotifications">
+        <Bell :size="18" />
+        <span v-if="unreadCount > 0" class="absolute -right-1 -top-1 rounded-full bg-rose-600 px-1.5 text-xs text-white" aria-live="polite">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+      </button>
       <span class="header-divider"></span>
       <div ref="profile" class="header-profile" @keydown="profileKeys" @focusout="event => { if (!profile?.contains(event.relatedTarget)) closeProfile(); }">
         <button id="header-profile-menu-btn" ref="profileTrigger" class="header-avatar" :aria-expanded="profileOpen" aria-controls="header-profile-panel" aria-label="ម៉ឺនុយគណនីរបស់ខ្ញុំ" @click="toggleProfile"><UserAvatar :src="currentUser?.avatar" :name="name" :size="34"/><span class="header-user-name">{{ name }}</span><ChevronDown :size="14" aria-hidden="true"/></button>

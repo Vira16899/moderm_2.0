@@ -90,6 +90,16 @@ const routes = [
     },
     children: [
       {
+        path: 'notifications', name: 'notifications',
+        component: () => import('@/views/shared/NotificationsView.vue'),
+        meta: { section: 'notifications', title: 'ការជូនដំណឹង' },
+      },
+      {
+        path: 'announcements', name: 'announcements',
+        component: () => import('@/views/shared/AnnouncementsView.vue'),
+        meta: { section: 'announcements', title: 'សេចក្តីជូនដំណឹង' },
+      },
+      {
         path: "",
         redirect: { name: "admin-dashboard" },
       },

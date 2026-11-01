@@ -85,8 +85,8 @@ the shared layout, and the Pinia workspace store holds state used by routed scre
 
 ```vue
 <script setup>
-import { BaseButton, BaseCard, BaseModal } from '@/components/base';
-import { useDisclosure } from '@/composables/useDisclosure';
+import { BaseButton, BaseCard, BaseModal } from "@/components/base";
+import { useDisclosure } from "@/composables/useDisclosure";
 
 const { isOpen, open, close } = useDisclosure();
 </script>
@@ -94,12 +94,18 @@ const { isOpen, open, close } = useDisclosure();
 <template>
   <BaseCard title="Employee details">
     <p>Review this employee's information.</p>
-    <template #footer><BaseButton @click="open">View details</BaseButton></template>
+    <template #footer
+      ><BaseButton @click="open">View details</BaseButton></template
+    >
   </BaseCard>
   <BaseModal v-model="isOpen" title="Employee details">
     <h2>Employee details</h2>
     <p>Place your dialog content here.</p>
-    <template #footer><BaseButton variant="secondary" @click="close">Close</BaseButton></template>
+    <template #footer
+      ><BaseButton variant="secondary" @click="close"
+        >Close</BaseButton
+      ></template
+    >
   </BaseModal>
 </template>
 ```

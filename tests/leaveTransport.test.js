@@ -25,7 +25,7 @@ test('leave requests preserve JSON null without a file and multipart boundaries 
     const {employeeApi}=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
     const form={startDate:'2026-10-26',endDate:'2026-10-27',reason:'Family matter'};
     await employeeApi.createLeave(leaveBody(form));
-    const body=leaveBody({...form,file:new File(['test-document-content'],'proof.pdf',{type:'application/octet-stream'})});
+    const body=leaveBody({...form,file:new File(['test-document-content'],'proof.png',{type:'image/png'})});
     await employeeApi.updateLeave(16,body);
     for(const request of received.slice(1)) {
       assert.match(request.type,/^multipart\/form-data; boundary=/);
@@ -39,8 +39,8 @@ test('leave requests preserve JSON null without a file and multipart boundaries 
     assert.deepEqual(JSON.parse(received[0].raw), {reason:'Family matter',start_date:'2026-10-26',end_date:'2026-10-27',file_url:null});
     assert.equal(received[1].method,'PUT');
     assert.match(received[1].raw,/name="id"\r\n\r\n16/);
-    assert.match(received[1].raw,/name="file"; filename="proof.pdf"/);
-    assert.match(received[1].raw,/Content-Type: application\/pdf/);
+    assert.match(received[1].raw,/name="file"; filename="proof.png"/);
+    assert.match(received[1].raw,/Content-Type: image\/png/);
     assert.match(received[1].raw,/test-document-content/);
     assert.equal(body.has('id'),false);
     assert.equal(body.has('file_url'),false, 'uploaded files use file, not the stored URL field');

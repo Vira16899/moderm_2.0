@@ -1,11 +1,12 @@
 <script lang="jsx">
-import { defineComponent, Transition } from "vue";
+import { defineComponent, Transition, watch, onMounted, onUnmounted } from "vue";
 import { applyTheme } from "@/utils/theme.js";
 import { RouterView, useRoute, useRouter } from "vue-router";
 import { createCompatRender, useEffect, useState } from "@/utils/vueCompat";
 import { useWorkspaceStore } from "@/stores/workspace";
 import Header from "@/components/layout/Header.vue";
 import Sidebar from "@/components/layout/Sidebar.vue";
+import { useNotificationsStore } from "@/stores/notifications.js";
 import NotificationsModal from "@/components/modals/NotificationsModal.vue";
 import LogoutModal from "@/components/modals/LogoutModal.vue";
 import { auth } from "@/auth/index.js";
@@ -98,6 +99,8 @@ const SECTION_ROUTE_NAMES = {
   employee_my_requests: "employee-my-requests",
   my_submissions: "employee-my-requests",
   employee_notifications: "employee-notifications",
+  notifications: "notifications",
+  announcements: "announcements",
   attendance: "attendance",
   manager_attendance: "manager-attendance",
 };
@@ -156,7 +159,8 @@ function App({ router, route }) {
   const [salaryRecords, setSalaryRecords] = useWorkspaceState("salaryRecords");
   const [attendanceToday, setAttendanceToday] = useWorkspaceState("attendanceToday");
   const [auditLogs, setAuditLogs] = useWorkspaceState("auditLogs");
-  const [notifications, setNotifications] = useWorkspaceState("notifications");
+  const notificationStore = useNotificationsStore();
+  const notifications = notificationStore.items;
   useEffect(() => {
     if (!isAuthenticated || currentRole !== "MANAGER") return;
     let active = true;
@@ -310,10 +314,14 @@ function App({ router, route }) {
     ]);
     return { ok: true, user: updatedUser };
   };
+  const [changingUserStatuses] = useState(() => new Set());
   const handleToggleUserStatus = async (userId) => {
-    if (isProtectedAdminId(userId)) return;
+    if (isProtectedAdminId(userId) || changingUserStatuses.has(String(userId))) return;
     const target = users.find((user) => user.id === userId);
-    const nextStatus = target?.status === "active" ? "inactive" : "active";
+    if (!target) return;
+    const nextStatus = target.status === "active" ? "inactive" : "active";
+    changingUserStatuses.add(String(userId));
+    try {
     if (getAccessToken()) {
       const response = await callAdminApi(() => nextStatus === "active" ? adminApi.reactivateUser(userId) : adminApi.setUserStatus(userId, nextStatus));
       if (!response.ok) return;
@@ -321,7 +329,6 @@ function App({ router, route }) {
     setUsers(
       (prev) => prev.map((u) => {
         if (u.id === userId) {
-          const nextStatus = u.status === "active" ? "inactive" : "active";
           setAuditLogs((logs) => [
             {
               id: `LOG-${Date.now()}`,
@@ -341,6 +348,8 @@ function App({ router, route }) {
         return u;
       })
     );
+    notify(nextStatus === "active" ? "បានបើកដំណើរការគណនីដោយជោគជ័យ។" : "បានផ្អាកដំណើរការគណនីដោយជោគជ័យ។");
+    } finally { changingUserStatuses.delete(String(userId)); }
   };
   const handleUpdateUserSalary = async (userId, salary, description) => {
     const response = await adminApi.updateSalary(userId, salary, description);
@@ -535,21 +544,6 @@ function App({ router, route }) {
       appliedDate: (/* @__PURE__ */ new Date()).toISOString().split("T")[0]
     };
     setLeaveRequests((prev) => [created, ...prev]);
-    setNotifications((prev) => [
-      {
-        id: `NOTIF-${Date.now()}`,
-        category: "leave",
-        titleKh: `សំណើសុំច្បាប់ថ្មីពី ${created.userNameKh || created.employeeNameKh || currentUser.nameKh}`,
-        titleEn: `New leave request submitted`,
-        messageKh: `បុគ្គលិកបានដាក់ពាក្យសុំច្បាប់ ${created.leaveType} រយៈពេល ${created.totalDays || created.daysCount || 1} ថ្ងៃ`,
-        messageEn: `Employee requested ${created.leaveType} leave`,
-        timestamp: "មុននេះបន្តិច",
-        read: false,
-        severity: "medium",
-        linkSection: "manager_leave_requests"
-      },
-      ...prev
-    ]);
   };
   const handleSubmitDocumentRequest = (doc) => {
     const created = {
@@ -559,21 +553,6 @@ function App({ router, route }) {
       requestDate: (/* @__PURE__ */ new Date()).toISOString().split("T")[0]
     };
     setDocumentRequests((prev) => [created, ...prev]);
-    setNotifications((prev) => [
-      {
-        id: `NOTIF-${Date.now()}`,
-        category: "document",
-        titleKh: `សំណើសុំឯកសារថ្មី: ${created.purpose || "លិខិតបញ្ជាក់"}`,
-        titleEn: `New Document Request Submitted`,
-        messageKh: `បុគ្គលិក ${currentUser.nameKh} បានស្នើសុំឯកសាររដ្ឋបាល`,
-        messageEn: `Employee ${currentUser.nameEn} submitted document request`,
-        timestamp: "មុននេះបន្តិច",
-        read: false,
-        severity: "medium",
-
-      },
-      ...prev
-    ]);
   };
   const handleClockIn = () => {
     const now = /* @__PURE__ */ new Date();
@@ -605,23 +584,13 @@ function App({ router, route }) {
       });
     }
   };
-  const handleMarkAllNotificationsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
-  const handleToggleNotificationRead = (id) => {
-    setNotifications(
-      (prev) => prev.map((n) => n.id === id ? { ...n, read: !n.read } : n)
-    );
-  };
-  const handleDeleteNotification = (id) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  };
   const handleOpenProfileTab = () => {
     setActiveSection(`${currentRole.toLowerCase()}_profile`);
   };
   if (!isAuthenticated) return null;
   // Vue Router supplies the lazily loaded page; this layout only supplies its props.
   const renderMainContent = (Page) => {
+    if (activeSection === "announcements") return <Page currentRole={currentRole} />;
     if (activeSection === "admin_dashboard") {
       return <Page
         users={users}
@@ -760,16 +729,7 @@ function App({ router, route }) {
 
       />;
     }
-    if (activeSection === "employee_notifications") {
-      return <Page
-        notifications={notifications}
-        onMarkAllAsRead={handleMarkAllNotificationsRead}
-        onToggleRead={handleToggleNotificationRead}
-        onDeleteNotification={handleDeleteNotification}
-        onNavigateSection={setActiveSection}
-
-      />;
-    }
+    if (activeSection === "employee_notifications" || activeSection === "notifications") return <Page />;
     if (currentRole === "ADMIN") {
       return <Page
         users={users}
@@ -822,7 +782,8 @@ function App({ router, route }) {
     theme={theme}
     onToggleTheme={() => setTheme((prev) => prev === "light" ? "dark" : "light")}
     notifications={notifications}
-    onOpenNotifications={() => setIsNotificationsModalOpen(true)}
+    unreadCount={notificationStore.count}
+    onOpenNotifications={() => { setIsNotificationsModalOpen(true); notificationStore.refresh(); }}
     onOpenProfile={handleOpenProfileTab}
     onLogoutClick={() => setIsLogoutModalOpen(true)}
     sidebarOpen={isSidebarOpen}
@@ -866,12 +827,9 @@ function App({ router, route }) {
     /* Popups and Modals */
   }
       <NotificationsModal
-    isOpen={currentRole === "EMPLOYEE" && isNotificationsModalOpen}
+    isOpen={isNotificationsModalOpen}
     onClose={() => setIsNotificationsModalOpen(false)}
-    notifications={notifications}
-    onMarkAllAsRead={handleMarkAllNotificationsRead}
-    onToggleRead={handleToggleNotificationRead}
-    onDeleteNotification={handleDeleteNotification}
+    onViewAll={() => setActiveSection("notifications")}
 
   />
 
@@ -889,6 +847,15 @@ export default defineComponent({
   name: "AppLayout",
   inheritAttrs: false,
   setup(_props, { attrs }) {
+    const notifications = useNotificationsStore();
+    watch(() => auth.state.user?.id, () => { notifications.reset(); notifications.refresh(); }, { immediate: true });
+    let interval;
+    const refresh = () => { if (!document.hidden) notifications.refresh(); };
+    onMounted(() => {
+      interval = window.setInterval(refresh, 60000);
+      window.addEventListener('focus', refresh);
+    });
+    onUnmounted(() => { clearInterval(interval); window.removeEventListener('focus', refresh); notifications.reset(); });
     const router = useRouter();
     const route = useRoute();
     return createCompatRender(App, () => ({ ...attrs, router, route }));

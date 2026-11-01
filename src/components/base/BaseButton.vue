@@ -1,4 +1,17 @@
 <script setup>
+import { useSlots, Text, Comment, Fragment } from 'vue';
+const slots = useSlots();
+function isIconOnly() {
+  const nodes = [...(slots.icon?.() || []), ...(slots.default?.() || [])];
+  const hasText = nodes => nodes.some(node => {
+    if (typeof node === 'string') return Boolean(node.trim());
+    if (!node || node.type === Comment) return false;
+    if (node.type === Text) return Boolean(String(node.children || '').trim());
+    if (node.type === Fragment || Array.isArray(node.children)) return hasText(node.children || []);
+    return typeof node.children === 'string' && Boolean(node.children.trim());
+  });
+  return nodes.length > 0 && !hasText(nodes);
+}
 defineProps({
   type: { type: String, default: 'button' },
   variant: { type: String, default: 'primary', validator: value => ['primary', 'secondary', 'outline', 'ghost', 'danger'].includes(value) },
@@ -17,7 +30,7 @@ const variants = {
 </script>
 
 <template>
-  <button :type="type" :disabled="disabled || loading" :aria-busy="loading" :aria-label="loading ? loadingLabel : undefined" :data-variant="variant" :data-size="size" :class="variants[variant]" class="base-button rounded-xl px-4 py-2.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+  <button :type="type" :disabled="disabled || loading" :aria-busy="loading" :aria-label="loading ? loadingLabel : undefined" :data-variant="variant" :data-size="size" :class="[variants[variant], { 'icon-only': isIconOnly() }]" class="base-button rounded-xl px-4 py-2.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
     <span class="base-button-content" :class="{ 'is-loading': loading }"><slot name="icon" /><slot /></span>
     <span v-if="loading" class="base-button-spinner" aria-hidden="true"></span>
   </button>

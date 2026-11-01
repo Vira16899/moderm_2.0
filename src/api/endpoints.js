@@ -11,6 +11,20 @@ export const API_ENDPOINTS = Object.freeze({
     refreshToken: { method: 'POST', path: '/refresh-token' },
     logout: { method: 'PUT', path: '/logout' },
   },
+  notifications: {
+    list: { method: 'GET', path: '/api/notifications' },
+    unreadCount: { method: 'GET', path: '/api/notifications/unread-count' },
+    read: { method: 'PATCH', path: '/api/notifications/read' },
+    readAll: { method: 'PATCH', path: '/api/notifications/read-all' },
+  },
+  announcements: {
+    list: { method: 'GET', path: '/api/announcements' },
+    detail: { method: 'GET', path: '/api/announcements/detail' },
+    create: { method: 'POST', path: '/api/announcements' },
+    read: { method: 'PATCH', path: '/api/announcements/read' },
+    readAll: { method: 'PATCH', path: '/api/announcements/read-all' },
+    remove: { method: 'DELETE', path: '/api/announcements' },
+  },
   positions: {
     getAll: { method: 'GET', path: '/getAllPositions' },
     getById: { method: 'GET', path: '/getPositionById', browserBridge: true },
